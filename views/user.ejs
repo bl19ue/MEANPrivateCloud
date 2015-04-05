@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>{{title}}</title>
+		<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.10/angular-ui-router.js"></script>
+	</head>
+	
+	<body ng-app="userModule">
+		<ui-view></ui-view>
+		
+		<script type="text/ng-template" id="/login.html">
+			<form ng-submit="loginUser()">
+				<label>Username:</label>
+				<input type="text" placeholder="Username" ng-model="username"/>
+
+				<label>Password:</label>
+				<input type="password" placeholder="Password" ng-model="password"/>
+
+				<button type="submit">Log in</button>
+			</form>
+			
+
+			<form ng-submit="signupUser()">
+				<label>Username:</label>
+				<input type="text" placeholder="Username" ng-model="newusername"/>
+
+				<label>Password:</label>
+				<input type="password" placeholder="Password" ng-model="newpassword"/>
+
+				<label>Verify Password:</label>
+				<input type="password" placeholder="Password" ng-model="newrepassword"/>
+
+				<button type="submit">Sign Up</button>
+			</form>
+		</script>
+		
+	</body>
+</html>

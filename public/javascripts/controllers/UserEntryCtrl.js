@@ -1,6 +1,7 @@
 angular.module('userModule')
 .controller('UserEntryCtrl', ['$scope', 'userObj', function($scope, userObj){
 	$scope.loginUser = function(){
+		console.log("in login");
 		userObj.login({
 			username: $scope.username,
 			password: $scope.password
@@ -11,6 +12,7 @@ angular.module('userModule')
 	};
 	
 	$scope.signupUser = function(){
+		console.log("in signup");
 		if($scope.newpassword !== $scope.newrepassword){
 			console.log('Password did not match');
 			//Show incorrect the label

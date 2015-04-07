@@ -5,22 +5,22 @@ var url = require('url');
 var rest = require('restler');
 var mongoose= require("mongoose");
 
-
+/*Get */
 var UserSchema = mongoose.model('User');
-
-
 
 /* GET home page. */
 router.get('/', function(req, res) {
-	res.render('index', { title: 'Express' });
+	res.render('index', { title: 'Welcome to Private Cloud'});
 
 });
 
+//This api redirects to user.ejs page
 router.get('/user', function(req, res) {
-	res.render('user', { title: 'Express' });
+	res.render('user', { title: 'User' });
 
 });
 
+//This api adds a new user in User collection
 router.post('/signup', function(req, res, next) {
 	var user = new UserSchema(req.body);
 
@@ -30,7 +30,8 @@ router.post('/signup', function(req, res, next) {
 	})
 });
 
-
+//This api allows user to login. First it checks the username and password if it is blank then it returns Invalid Credentials
+//If credentials are non blank then it searches for the username in User collection. If user is found then it authenticates the password.
 router.post('/login',function(req,res){
 	var username = req.body.username;
 	var password = req.body.password;
@@ -63,7 +64,7 @@ router.post('/login',function(req,res){
 	});
 });
 
-
+//This method calls a JAVA Spring Boot API running on localhost:8080
 function performReq(path,method,d){
 	//var dataString = JSON.stringify(data);
 	//var headers = {};
@@ -80,27 +81,24 @@ function performReq(path,method,d){
 	});
 }
 
-router.get('/vm/:id/VMlist', function(req, res){
+//This api gives list of all VMs of user- 'username'
+router.get('/user/:username/vm/list', function(req, res){
 	var id = req.params.id;
 	console.log(req.params.id);
-
 	var db = req.db;
 	var collection= db.get('VM');
 
 	var d = collection.find({},{}, function(e, documents)
-							{
-
+	{
 		res.render('VMlist',{ "VMlist" :documents});
-
 	});
 
-
 	var reqGet = performReq('/vm/' + req.params.id +'/VMlist','get',d);
-
 	reqGet.end();
 });
 
-router.post('/vm/:id/createVM', function(req, res, next){
+//This api creates a VM for user- 'username'
+router.post('/user/:username/vm/create', function(req, res, next){
 	console.log(req.params.id);
 	var id = req.params.id;
 	var create = new createVM(req.body);
@@ -113,8 +111,8 @@ router.post('/vm/:id/createVM', function(req, res, next){
 
 });
 
-
-router.get('/vm/:id/start', function(req, res){
+//This api starts vm with vmId - id of user- 'username'
+router.get('/user/:username/vm/:id/start', function(req, res){
 	console.log(req.params.id);
 
 	var data = {
@@ -127,7 +125,8 @@ router.get('/vm/:id/start', function(req, res){
 	request.end();
 });
 
-router.get('/vm/:id/stop', function(req, res){
+//This api stops vm with vmId - id of user- 'username'
+router.get('/user/:username/vm/:id/stop', function(req, res){
 	console.log(req.params.id);
 	var data = {
 		id: req.params.id,
@@ -137,7 +136,8 @@ router.get('/vm/:id/stop', function(req, res){
 	request.end();
 });
 
-router.get('/vm/:id/stats', function(req,res){
+//This api gives stats of vm with vmId - id of user- 'username'
+router.get('/user/:username/vm/:id/stats', function(req,res){
 	console.log(req.params.id);
 	var data = {
 		id: req.params.id,

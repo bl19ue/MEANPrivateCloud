@@ -1,6 +1,8 @@
 angular.module('userModule')
 .controller('UserEntryCtrl', ['$scope', 'userObj', function($scope, userObj){
+	console.log('constructor');
 	$scope.loginUser = function(){
+		
 		console.log("in login");
 		userObj.login({
 			username: $scope.username,

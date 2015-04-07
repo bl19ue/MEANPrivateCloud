@@ -14,13 +14,13 @@
 		<!-- Compiled and minified JavaScript -->
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.96.0/css/materialize.min.css">
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.96.0/js/materialize.min.js"></script>
+		
 <!--		<script src="../public/javascripts/materialize.js"></script>-->
 
 
 	</head>
 
-	<body ng-app="userModule">
-		{{2*4}}
+	<body ng-app='userModule'>
 		<nav class="grey darken-3 lighten-1" role="navigation">
 			<div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">VM Manager</a>
 				<ul class="right hide-on-med-and-down">
@@ -45,12 +45,12 @@
 						<form class="col s6" ng-submit="loginUser()">
 							<h4>Sign In</h4>
 							<div class="input-field col s12">    
-								<input id="userName" type="text" class="validate" ng-model="username">
+								<input type="text" ng-model="username">
 								<label for="userName">Username</label>
 							</div>
 							
 							<div class="input-field col s12">    
-								<input id="password" type="password" class="validate" ng-model="password">
+								<input type="password" ng-model="password">
 								<label for="password">Password</label>
 							</div>    
 							
@@ -86,7 +86,7 @@
 								<label id="lblPasswordStrength" style="float:right"></label></i>
 							</div>    
 							<div class="input-field col s12">    
-								<input id="confirmPassword" type="password" class="validate">
+								<input id="confirmPassword" type="password" class="validate" ng-model="newrepassword">
 								<label for="confirmPassword">Confirm Password</label>
 							</div>
 							<div class="input-field col s12 center">
@@ -141,7 +141,11 @@
 
 
 		<!--  Scripts-->
-		
+	<script src="/javascripts/user.js"></script>
+	<script src="/javascripts/services/userService.js"></script>
+	<script src="/javascripts/services/instanceService.js"></script>
+	<script src="/javascripts/controllers/UserEntryCtrl.js"></script>
+	<script src="/javascripts/controllers/PC2Ctrl.js"></script>
 
 	</body>
 </html>

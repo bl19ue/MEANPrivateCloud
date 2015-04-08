@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html>
+
 	<head>
 		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
 		<script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.10/angular-ui-router.js"></script>
 		<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 		<!--Import materialize.css-->
-<!--		<link type="text/css" rel="stylesheet" href="../public/stylesheets/materialize.css"  media="screen,projection"/>-->
+		<!--		<link type="text/css" rel="stylesheet" href="../public/stylesheets/materialize.css"  media="screen,projection"/>-->
 		<!--Let browser know website is optimized for mobile-->
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<title>Home Page</title>
 		<!-- Compiled and minified CSS -->
 		<!-- Compiled and minified JavaScript -->
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.96.0/css/materialize.min.css">
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.96.0/js/materialize.min.js"></script>
-		
-<!--		<script src="../public/javascripts/materialize.js"></script>-->
+		<script src="/javascripts/user.js"></script>
+		<script src="/javascripts/services/userService.js"></script>
+		<script src="/javascripts/services/instanceService.js"></script>
+
+		<!--		<script src="../public/javascripts/materialize.js"></script>-->
 
 
 	</head>
@@ -38,69 +42,170 @@
 		<ui-view></ui-view>
 
 		<script type="text/ng-template" id="/login.html">
-			
-			<div class="container">
-				<div class="section">
+
+		<div class="container">
+			<div class="section">
+				<div class="row">
+					<form class="col s6" ng-submit="loginUser()">
+						<h4>Sign In</h4>
+						<div class="input-field col s12">
+							<input type="text" ng-model="username">
+							<label for="userName">Username</label>
+			</div>
+
+						<div class="input-field col s12">
+							<input type="password" ng-model="password">
+							<label for="password">Password</label>
+			</div>
+
+						<div class="input-field col s12 center">
+							<button class="btn waves-effect waves-light  grey darken-3" type="submit">Sign In</button>
+			</div>
+
+			</form>
+
+					<form class="col s6" ng-submit="signupUser()">
+						<h4>Sign Up</h4>
+						<div class="input-field col s12">
+							<input id="firstName" type="text" class="validate" ng-model="firstname">
+							<label for="firstName">First Name</label>
+			</div>
+
+						<div class="input-field col s12">
+							<input id="lastName" type="text" class="validate" ng-model="lastname">
+							<label for="lastName">Last Name</label>
+			</div>
+
+						<div class="input-field col s12">
+							<input id="newusername" type="text" class="validate" ng-model="newusername">
+							<label for="newusername">Username</label>
+			</div>
+
+						<div class="input-field col s12">
+							<input id="newpassword" type="password" class="validate" ng-model="newpassword">
+							<label for="newpassword">Password</label>
+
+							<div id="dvHelp" style="display:none; float:right; width:225px"></div>
+							<progress id="pBarPasswordStrength" style="display:none" max="100" value="0"></progress>
+							<label id="lblPasswordStrength" style="float:right"></label>
+			</i>
+			</div>
+					<div class="input-field col s12">
+						<input id="confirmPassword" type="password" class="validate" ng-model="newrepassword">
+						<label for="confirmPassword">Confirm Password</label>
+			</div>
+					<div class="input-field col s12 center">
+						<button class="btn waves-effect waves-light  grey darken-3" type="submit">Sign Up</button>
+
+			</div>
+			</form>
+			</div>
+
+			<!--   Icon Section   -->
+			</div>
+		<br>
+		<br>
+
+			</div>
+		</script>
+
+		<script type="text/ng-template" id="/PC2.html">
+		<div class="container">
+			<div class="section">
+				<div class="row">
 					<div class="row">
-						<form class="col s6" ng-submit="loginUser()">
-							<h4>Sign In</h4>
-							<div class="input-field col s12">    
-								<input type="text" ng-model="username">
-								<label for="userName">Username</label>
-							</div>
-							
-							<div class="input-field col s12">    
-								<input type="password" ng-model="password">
-								<label for="password">Password</label>
-							</div>    
-							
-							<div class="input-field col s12 center">
-								<button class="btn waves-effect waves-light  grey darken-3" type="submit">Sign In</button>
-							</div>
+						<div class="col s12">
+							<ul class="tabs">
+								<li class="tab col s4"><a class="active" href="#dashboard">Dashboard</a></li>
+								<li class="tab col s4"><a href="#launch">Launch Instance</a></li>
+								<li class="tab col s4"><a href="#status">Status</a></li>
+							</ul>
+						</div>
 
-						</form>
+						<div id="status" class="col s12"></div>
 
-						<form class="col s6" ng-submit="signupUser()">
-							<h4>Sign Up</h4>
-							<div class="input-field col s12">    
-								<input id="firstName" type="text" class="validate" ng-model="firstname">
-								<label for="firstName">First Name</label>
-							</div>
-							
-							<div class="input-field col s12">    
-								<input id="lastName" type="text" class="validate" ng-model="lastname">
-								<label for="lastName">Last Name</label>
-							</div>
-							
-							<div class="input-field col s12">    
-								<input id="newusername" type="text" class="validate" ng-model="newusername">
-								<label for="newusername">Username</label>
-							</div>
-							
-							<div class="input-field col s12">    
-								<input id="newpassword" type="password" class="validate" ng-model="newpassword">
-								<label for="newpassword">Password</label>
+						<div id="launch" class="col s12">
+							<ul class="collapsible popout" data-collapsible="accordion">
+								<li>
+									<div class="collapsible-header" data-target="modal1" class="modal-trigger">
+										<span class="col s2">
+											<i class="mdi-hardware-desktop-windows"></i>
+										</span>
+										<span class="col s4">VM Name</span>
+										<span class="col s4">Type</span>
+										<span class="col s2">Status</span>
+									</div>
 
-								<div id="dvHelp" style="display:none; float:right; width:225px"></div>
-								<progress id="pBarPasswordStrength" style="display:none" max="100" value="0"></progress>
-								<label id="lblPasswordStrength" style="float:right"></label></i>
-							</div>    
-							<div class="input-field col s12">    
-								<input id="confirmPassword" type="password" class="validate" ng-model="newrepassword">
-								<label for="confirmPassword">Confirm Password</label>
-							</div>
-							<div class="input-field col s12 center">
-								<button class="btn waves-effect waves-light  grey darken-3" type="submit">Sign Up</button>
+									<div class="collapsible-body">
+										<p>Lorem ipsum dolor sit amet.</p>
+									</div>
+								</li>
 
+								<li>
+									<div class="collapsible-header"><i class="mdi-maps-place"></i>Second</div>
+									<div class="collapsible-body">
+										<p>Lorem ipsum dolor sit amet.</p>
+									</div>
+								</li>
+
+								<li>
+									<div class="collapsible-header"><i class="mdi-social-whatshot"></i>Third</div>
+									<div class="collapsible-body">
+										<p>Lorem ipsum dolor sit amet.</p>
+									</div>
+								</li>
+							</ul>
+						</div>
+
+						<div id="dashboard" class="col s12">
+							<div class="col s12">
+								<!-- Modal Structure -->
+								<div id="vmDetails" class="modal modal-fixed-footer">
+									<div class="modal-content">
+										<h4>VM Details</h4>
+										<p>A bunch of text</p>
+									</div>
+									<div class="modal-footer">
+										<a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat ">Close</a>
+									</div>
+								</div>
+
+								<table class="hoverable">
+									<thead>
+										<tr>
+											<th data-field="name">VM Name</th>
+											<th data-field="type">Type</th>
+											<th data-field="status">Status</th>
+										</tr>
+									</thead>
+
+									<tbody>
+										<div ng-repeat="instance in instances">
+											<tr data-target="vmDetails" class="modal-trigger">
+
+												<td>{{instance.name}}</td>
+												<td>{{instance.type}}</td>
+												<td>{{instance.status}}</td>
+												
+											</tr>
+										</div>
+									</tbody>
+								</table>
 							</div>
-					</form>
+						</div>
+					</div>
+
+
+
 				</div>
 
 				<!--   Icon Section   -->
-				</div>
-				<br><br>
+			</div>
+			<br>
+			<br>
 
-				</div>	
+		</div>
+
 		</script>
 
 		<footer class="page-footer grey darken-3">
@@ -117,7 +222,9 @@
 							<li><a class="white-text" href="#!">Piyush</a></li>
 							<li><a class="white-text" href="#!">Sumit</a></li>
 							<li><a class="white-text" href="#!">Vaibhav</a></li>
-							<li><a class="white-text" href="#!">Surabhi</a><li><a class="white-text" href="#!">Prajakta</a></li></li>
+							<li><a class="white-text" href="#!">Surabhi</a>
+							<li><a class="white-text" href="#!">Prajakta</a></li>
+							</li>
 						</ul>
 				</div>
 				<div class="col l3 s12">
@@ -140,12 +247,12 @@
 		</footer>
 
 
-		<!--  Scripts-->
-	<script src="/javascripts/user.js"></script>
-	<script src="/javascripts/services/userService.js"></script>
-	<script src="/javascripts/services/instanceService.js"></script>
+	<!--  Scripts-->
+
+
 	<script src="/javascripts/controllers/UserEntryCtrl.js"></script>
 	<script src="/javascripts/controllers/PC2Ctrl.js"></script>
 
 	</body>
+
 </html>

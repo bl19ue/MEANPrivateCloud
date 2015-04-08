@@ -18,14 +18,14 @@ router.get('/', function(req, res) {
 
 //This method calls a JAVA Spring Boot API running on localhost:8080
 function performReq(path,method,d){
-	
+
 	var req = rest.method('http://localhost:8080'+ path, {data: d}).on('complete', function(data){
 		console.log(data);
 	});
 
 
 	req.end();
-	
+
 	req.on('error', function(e) {
 		console.error(e);
 	});
@@ -41,18 +41,25 @@ router.get('/user', function(req, res) {
 //This api adds a new user in User collection
 router.post('/signup', function(req, res, next) {
 	var user = new UserSchema(req.body);
-	var username = req.params.username;
-
-	UserSchema.findOne({'username': username}, function(err, username){
+	console.log("user = " + user);
+	UserSchema.findOne({'username': user.username}, function(err, foundUser){
 		if (err) throw err;
-		else
-			console.log(username+" Already Exists");
+		if(foundUser){
+			console.log('422');
+			res.json({data : '422'}); //422 - data exists
+		}
+		else{
+			user.save(function(err, user){
+				if(err) { 
+					return next(err); 
+				}
+				console.log("user saved");
+				res.json(user);
+			});	
+		}
 	});
 
-	user.save(function(err, user){
-		if(err) { return next(err); }
-		res.json(user);
-	})
+
 });
 
 //This api allows user to login. First it checks the username and password if it is blank then it returns Invalid Credentials
@@ -63,11 +70,11 @@ router.post('/login',function(req,res){
 
 	if (username == '' || password == '') {
 		res.status(401);
-		res.json({
-			"status": 401,
+		data = {
 			"message": "Invalid credentials"
-		});
-		return;
+		};
+		res.end(data);
+		
 	}
 
 	UserSchema.findOne({username: username}, function (err, user) {
@@ -84,7 +91,12 @@ router.post('/login',function(req,res){
 			return res.send(user);
 		}
 		else {
-			return res.send("Try Again !!");
+			console.log('pass did not match');
+			//res.status(401);
+			data = {
+				"error": "Invalid credentials"
+			};
+			res.json(data);
 		}
 	});
 });
@@ -92,22 +104,22 @@ router.post('/login',function(req,res){
 
 //This api gives list of all VMs of user- 'username'
 router.get('/user/:username/vm/list', function(req, res){
-	
+
 	var username = req.body.username;
-	
+
 	var d = UserSchema.findOne({'username': username}, function(err, username){
-				
-				var instances = username.instances
-				
-				Instance.find({'_id': {$in: instances}}, function(err, instance_id){
-				
-					var ids = [] ;
-				
-					for(var i =0; i< instances.length; i++){
-					
-                    	ids.push(username.instances.instance_id);
-                	}
-				console.log(ids);
+
+		var instances = username.instances
+
+		Instance.find({'_id': {$in: instances}}, function(err, instance_id){
+
+			var ids = [] ;
+
+			for(var i =0; i< instances.length; i++){
+
+				ids.push(username.instances.instance_id);
+			}
+			console.log(ids);
 			return ids;
 		});
 	});
@@ -123,8 +135,8 @@ router.post('/user/:username/vm/create', function(req, res, next){
 
 	var template_name = Template.find({'name': {$in: name} }).toArray( function(err, name){
 		if (err) throw err;
-  		console.log(name);
-  		return (name);
+		console.log(name);
+		return (name);
 	});
 
 	var reqGet = performReq('/vm/'+ req.params.name+ '/create', 'post', template_name);
@@ -138,19 +150,19 @@ router.get('/user/:username/vm/:id/start', function(req, res){
 	username = req.params.username;
 
 	var data = UserSchema.find({'username': username}, function(err, username){
-				var id = username.instances;
-				Instance.find({'_id': {$in: id}}, function(err, id){
-					if (err) throw err;
-					else
-						console.log(id);
-				return (id);
-			});
+		var id = username.instances;
+		Instance.find({'_id': {$in: id}}, function(err, id){
+			if (err) throw err;
+			else
+				console.log(id);
+			return (id);
+		});
 	});
 
 	var reqGet = performReq('/vm/'+ req.params.id + '/start', 'get', data);
 
 	reqGet.end();
-	
+
 });
 
 //This api stops vm with vmId - id of user- 'username'
@@ -159,13 +171,13 @@ router.get('/user/:username/vm/:id/stop', function(req, res){
 	username = req.params.username;
 
 	var data = UserSchema.find({'username': username}, function(err, username){
-				var id = username.instances;
-				Instance.find({'_id': {$in: id}}), function(err, id){
-					if (err) throw err;
-					else
-						console.log(id);
-				return (id);
-			});
+		var id = username.instances;
+		Instance.find({'_id': {$in: id}}), function(err, id){
+			if (err) throw err;
+			else
+				console.log(id);
+			return (id);
+		}
 	});
 	var request = performReq('/vm/'+ req.params.id + 'stop', 'get', data);
 	request.end();

@@ -3,11 +3,14 @@ angular.module('userModule')
 	
 	$scope.loginUser = function(){
 		console.log("in login");
-		user.login({
+		if($scope.username == '' || $scope.password == ''){
+			return;
+		}
+		var msg = user.login({
 			username: $scope.username,
 			password: $scope.password
 		});
-		
+		console.log("msg=" + msg);
 		$scope.username = '';
 		$scope.password = '';
 	};
@@ -21,8 +24,10 @@ angular.module('userModule')
 		}
 		
 		user.signup({
+			firstname: $scope.firstname,
+			lastname: $scope.lastname,
 			username: $scope.newusername,
-			password: $scope.newpassword
+			password: $scope.newpassword,
 		});
 		/*
 		$scope.newusername = '';

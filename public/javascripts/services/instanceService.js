@@ -1,30 +1,53 @@
 angular.module('userModule')
-.factory('instanceObj', ['$http', 'state', function($http, $state){
-	var instanceObj = {
-		instances: []
+.factory('instance', ['$http', '$state', function($http, $state){
+	var o = {
+		instances: [
+			{
+				name: 'Sumit VM',
+				type: 'Ubuntu',
+				cpu: 8,
+				ram: 32,
+				storage: 2,
+				status: 'Started',
+			},
+			{
+				name: 'Piyush VM',
+				type: 'Windows',
+				cpu: 2,
+				ram: 12,
+				storage: 2,
+				status: 'Stopped',
+			},
+			{
+				name: 'Vaibhav VM',
+				type: 'Ubuntu',
+				cpu: 18,
+				ram: 22,
+				storage: 22,
+				status: 'Started',
+			}
+		]
 	};
 
-	instanceObj.create = function(){
+	o.create = function(){
 		
 	}
 
-	instanceObj.delete = function(){
+	o.delete = function(){
 		
 	}
 
-	instanceObj.start = function(){
+	o.start = function(){
 
 	}
 	
-	instanceObj.stop = function(){
+	o.stop = function(){
 
 	}
 
-	instanceObj.getStats = function(){
+	o.getStats = function(){
 	
 	}
 	
-	
-	
-	return userObj;
+	return o;
 }]);

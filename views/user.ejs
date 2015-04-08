@@ -18,6 +18,15 @@
 		<script src="/javascripts/user.js"></script>
 		<script src="/javascripts/services/userService.js"></script>
 		<script src="/javascripts/services/instanceService.js"></script>
+		<script src="/javascripts/controllers/UserEntryCtrl.js"></script>
+		<script src="/javascripts/controllers/PC2Ctrl.js"></script>
+		<script type="text/javascript">
+
+			$(document).ready(function(){
+				// the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
+				$('.modal-trigger').leanModal();
+			});
+		</script>
 
 		<!--		<script src="../public/javascripts/materialize.js"></script>-->
 
@@ -166,7 +175,7 @@
 										<p>A bunch of text</p>
 									</div>
 									<div class="modal-footer">
-										<a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat ">Close</a>
+										<a href="#" class="modal-action modal-close waves-effect waves-green btn-flat ">Close</a>
 									</div>
 								</div>
 
@@ -180,15 +189,12 @@
 									</thead>
 
 									<tbody>
-										<div ng-repeat="instance in instances">
-											<tr data-target="vmDetails" class="modal-trigger">
+											<tr data-target="vmDetails" class="modal-trigger" ng-repeat="instance in instances">
 
-												<td>{{instance.name}}</td>
+												<td>{{instances[0].name}}</td>
 												<td>{{instance.type}}</td>
 												<td>{{instance.status}}</td>
-												
 											</tr>
-										</div>
 									</tbody>
 								</table>
 							</div>
@@ -250,9 +256,7 @@
 	<!--  Scripts-->
 
 
-	<script src="/javascripts/controllers/UserEntryCtrl.js"></script>
-	<script src="/javascripts/controllers/PC2Ctrl.js"></script>
-
+	
 	</body>
 
 </html>

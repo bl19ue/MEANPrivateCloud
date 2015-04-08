@@ -70,7 +70,7 @@ router.post('/login',function(req,res){
 		return;
 	}
 
-	db.userModel.findOne({username: username}, function (err, user) {
+	UserSchema.findOne({username: username}, function (err, user) {
 		if (err) {
 			console.log(err);
 			return res.send(401);
@@ -80,11 +80,11 @@ router.post('/login',function(req,res){
 			return res.send("Username not found");
 		}
 
-		if (user.password != password){
-			return res.send("Try again");
+		if (user.password == password){
+			return res.send(user);
 		}
 		else {
-			return res.send(user);
+			return res.send("Try Again !!");
 		}
 	});
 });
@@ -111,7 +111,7 @@ router.get('/user/:username/vm/list', function(req, res){
 			return ids;
 		});
 	});
-	var reqGet = performReq('/vm/' + req.params.id +'/VMlist','get',d);
+	var reqGet = performReq('/vm/' + req.params.id +'/list','get',d);
 	reqGet.end();
 });
 
@@ -139,8 +139,10 @@ router.get('/user/:username/vm/:id/start', function(req, res){
 
 	var data = UserSchema.find({'username': username}, function(err, username){
 				var id = username.instances;
-				Instance.find({'_id': {$in: id}}).toArray( function(err, id){
+				Instance.find({'_id': {$in: id}}, function(err, id){
 					if (err) throw err;
+					else
+						console.log(id);
 				return (id);
 			});
 	});
@@ -158,9 +160,11 @@ router.get('/user/:username/vm/:id/stop', function(req, res){
 
 	var data = UserSchema.find({'username': username}, function(err, username){
 				var id = username.instances;
-				Instance.find({'_id': {$in: id}}).toArray( function(err, name){
+				Instance.find({'_id': {$in: id}}), function(err, id){
 					if (err) throw err;
-				return (name);
+					else
+						console.log(id);
+				return (id);
 			});
 	});
 	var request = performReq('/vm/'+ req.params.id + 'stop', 'get', data);

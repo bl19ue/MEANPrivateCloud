@@ -7,12 +7,30 @@ var mongoose= require("mongoose");
 
 /*Get */
 var UserSchema = mongoose.model('User');
+var Template = mongoose.model('Template');
+var Instance = mongoose.model('Instance');
 
 /* GET home page. */
 router.get('/', function(req, res) {
 	res.render('index', { title: 'Welcome to Private Cloud'});
 
 });
+
+//This method calls a JAVA Spring Boot API running on localhost:8080
+function performReq(path,method,d){
+	
+	var req = rest.method('http://localhost:8080'+ path, {data: d}).on('complete', function(data){
+		console.log(data);
+	});
+
+
+	req.end();
+	
+	req.on('error', function(e) {
+		console.error(e);
+	});
+}
+
 
 //This api redirects to user.ejs page
 router.get('/user', function(req, res) {
@@ -23,6 +41,13 @@ router.get('/user', function(req, res) {
 //This api adds a new user in User collection
 router.post('/signup', function(req, res, next) {
 	var user = new UserSchema(req.body);
+	var username = req.params.username;
+
+	UserSchema.findOne({'username': username}, function(err, username){
+		if (err) throw err;
+		else
+			console.log(username+" Already Exists");
+	});
 
 	user.save(function(err, user){
 		if(err) { return next(err); }
@@ -64,35 +89,28 @@ router.post('/login',function(req,res){
 	});
 });
 
-//This method calls a JAVA Spring Boot API running on localhost:8080
-function performReq(path,method,d){
-	//var dataString = JSON.stringify(data);
-	//var headers = {};
-
-	var req = rest.method('http://localhost:8080'+ path, {data: d}).on('complete', function(data){
-		console.log(data);
-	});
-
-
-	req.end();
-	
-	req.on('error', function(e) {
-		console.error(e);
-	});
-}
 
 //This api gives list of all VMs of user- 'username'
 router.get('/user/:username/vm/list', function(req, res){
-	var id = req.params.id;
-	console.log(req.params.id);
-	var db = req.db;
-	var collection= db.get('VM');
-
-	var d = collection.find({},{}, function(e, documents)
-	{
-		res.render('VMlist',{ "VMlist" :documents});
+	
+	var username = req.body.username;
+	
+	var d = UserSchema.findOne({'username': username}, function(err, username){
+				
+				var instances = username.instances
+				
+				Instance.find({'_id': {$in: instances}}, function(err, instance_id){
+				
+					var ids = [] ;
+				
+					for(var i =0; i< instances.length; i++){
+					
+                    	ids.push(username.instances.instance_id);
+                	}
+				console.log(ids);
+			return ids;
+		});
 	});
-
 	var reqGet = performReq('/vm/' + req.params.id +'/VMlist','get',d);
 	reqGet.end();
 });
@@ -101,37 +119,50 @@ router.get('/user/:username/vm/list', function(req, res){
 router.post('/user/:username/vm/create', function(req, res, next){
 	console.log(req.params.id);
 	var id = req.params.id;
-	var create = new createVM(req.body);
+	var name = ['Ubuntu','Windows'] 
 
-	create.save(function(err, create){
-		if(err) {return next(err);}
-		console.log("VM successfully created");
-		res.send(create);
+	var template_name = Template.find({'name': {$in: name} }).toArray( function(err, name){
+		if (err) throw err;
+  		console.log(name);
+  		return (name);
 	});
+
+	var reqGet = performReq('/vm/'+ req.params.name+ '/create', 'post', template_name);
+	reqGet.end();
 
 });
 
 //This api starts vm with vmId - id of user- 'username'
 router.get('/user/:username/vm/:id/start', function(req, res){
 	console.log(req.params.id);
+	username = req.params.username;
 
-	var data = {
-		id: req.params.id,
-		VMname: req.params.VMname
-	};
+	var data = UserSchema.find({'username': username}, function(err, username){
+				var id = username.instances;
+				Instance.find({'_id': {$in: id}}).toArray( function(err, id){
+					if (err) throw err;
+				return (id);
+			});
+	});
 
-	var request = performReq('/vm/'+ req.params.id + 'start', 'get', data);
+	var reqGet = performReq('/vm/'+ req.params.id + '/start', 'get', data);
 
-	request.end();
+	reqGet.end();
+	
 });
 
 //This api stops vm with vmId - id of user- 'username'
 router.get('/user/:username/vm/:id/stop', function(req, res){
 	console.log(req.params.id);
-	var data = {
-		id: req.params.id,
-		VMname: req.params.VMname
-	};
+	username = req.params.username;
+
+	var data = UserSchema.find({'username': username}, function(err, username){
+				var id = username.instances;
+				Instance.find({'_id': {$in: id}}).toArray( function(err, name){
+					if (err) throw err;
+				return (name);
+			});
+	});
 	var request = performReq('/vm/'+ req.params.id + 'stop', 'get', data);
 	request.end();
 });

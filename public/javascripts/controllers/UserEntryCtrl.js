@@ -1,10 +1,9 @@
 angular.module('userModule')
-.controller('UserEntryCtrl', ['$scope', 'userObj', function($scope, userObj){
-	console.log('constructor');
+.controller('UserEntryCtrl', ['$scope', 'user', function($scope, user){
+	
 	$scope.loginUser = function(){
-		
 		console.log("in login");
-		userObj.login({
+		user.login({
 			username: $scope.username,
 			password: $scope.password
 		});
@@ -21,7 +20,7 @@ angular.module('userModule')
 			return;
 		}
 		
-		userObj.signup({
+		user.signup({
 			username: $scope.newusername,
 			password: $scope.newpassword
 		});

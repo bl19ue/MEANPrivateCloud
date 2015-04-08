@@ -30,18 +30,6 @@
     $('.modal-trigger').leanModal();
   });
 
-function DialogController($scope, $mdDialog) {
-  $scope.hide = function() {
-    $mdDialog.hide();
-  };
-  $scope.cancel = function() {
-    $mdDialog.cancel();
-  };
-  $scope.answer = function(answer) {
-    $mdDialog.hide(answer);
-  };
-}
-
 
    </script>
 </head>
@@ -68,23 +56,6 @@ function DialogController($scope, $mdDialog) {
       </div>
     </nav>
   </div>
- <!--  <div class="section no-pad-bot" id="index-banner">
-    <div class="container">
-      <br><br>
-      
-
-      <h1 class="header center orange-text">Starter Template</h1>
-      <div class="row center">
-        <h5 class="header col s12 light">A modern responsive front-end framework based on Material Design</h5>
-      </div>
-      <div class="row center">
-        <a href="http://materializecss.com/getting-started.html" id="download-button" class="btn-large waves-effect waves-light orange">Get Started</a>
-      </div>
-      <br><br>
-
-    </div>
-  </div>
- -->
 
   <div class="container">
     <div class="section">
@@ -101,28 +72,69 @@ function DialogController($scope, $mdDialog) {
            
           </div>
           <div id="launch" class="col s12">
-            <ul class="collapsible popout" data-collapsible="accordion">
-              <li>                  
-                <div class="collapsible-header" data-target="modal1" class="modal-trigger">
-                  <span class="col s2">
-                  <i class="mdi-hardware-desktop-windows"></i>
-                  </span>
-                  <span class="col s4">VM Name</span>
-                  <span class="col s4">Type</span>
-                  <span class="col s2">Status</span>
+            <div class="container">
+              <div id="deployVM" class="modal modal-fixed-footer" style="width:30%; height:45%;">
+                <div class="modal-content">
+                  <h2>Deploy VM</h2>
+                  <div class="input-field col s12">    
+                    <input id="vmName" type="text" class="validate">
+                    <label for="vmName">Name Your VM</label>
+                  </div>
                 </div>
-                <div class="collapsible-body"><p>Lorem ipsum dolor sit amet.</p></div>
-                </a>
-              </li>
-              <li>
-                <div class="collapsible-header"><i class="mdi-maps-place"></i>Second</div>
-                <div class="collapsible-body"><p>Lorem ipsum dolor sit amet.</p></div>
-              </li>
-              <li>
-                <div class="collapsible-header"><i class="mdi-social-whatshot"></i>Third</div>
-                <div class="collapsible-body"><p>Lorem ipsum dolor sit amet.</p></div>
-              </li>
-            </ul> 
+                <div class="modal-footer">
+                  <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat ">Create</a>
+                  <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat ">Close</a>
+                </div>
+              </div>
+
+              <ul class="collapsible popout" data-collapsible="accordion">
+                <li>                  
+                  <div class="collapsible-header" data-target="modal1" class="modal-trigger">
+                    <span class="col s1">
+                    <i class="mdi-hardware-desktop-windows"></i>
+                    </span>
+                    <span class="col s11">Please select a template from below</span>
+                  </div>
+                </li>
+                <li>
+                  <div class="collapsible-header"><i class="mdi-maps-place"></i>Ubuntu</div>
+                  <div class="collapsible-body">
+                    <div class="row">                      
+                      <div class="col s12">
+                            <div class="input-field col s12 center">    
+                              <h3 class="card-title col s10">Ubuntu - 10GB</h3>
+                              <span class="col s2">
+                                <div class="btn-floating btn-large waves-effect waves-light red modal-trigger" data-target="deployVM"><i class="mdi-content-add"></i></div>
+                              </span>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="input-field col s12">    
+                              <span class="col s4">Type</span><span id="templateType" class="col s8">Ubuntu</span>
+                            </div>
+                            <div class="input-field col s12">    
+                              <span class="col s4">OS</span><span id="templateType" class="col s8">Ubuntu</span>
+                            </div>
+                            <div class="input-field col s12">    
+                              <span class="col s4">CPU</span><span id="templateType" class="col s8">Ubuntu</span>
+                            </div>
+                            <div class="input-field col s12">    
+                              <span class="col s4">Memory</span><span id="templateType" class="col s8">Ubuntu</span>
+                            </div>
+                            <div class="input-field col s12">
+                              <span class="col s4">Storage Capacity</span><span id="templateType" class="col s8">Ubuntu</span>
+                            </div>
+
+                      </div>
+
+                    </div>
+                  </div>
+                </li>
+                <li>
+                  <div class="collapsible-header"><i class="mdi-social-whatshot"></i>Windows</div>
+                  <div class="collapsible-body"><p>Lorem ipsum dolor sit amet.</p></div>
+                </li>
+              </ul>
+            </div> 
           </div>
           <div id="list" class="col s12">
             <div class="col s12">
@@ -132,11 +144,36 @@ function DialogController($scope, $mdDialog) {
               <!-- Modal Structure -->
               <div id="vmDetails" class="modal modal-fixed-footer">
                 <div class="modal-content">
-                  <h4>VM Details</h4>
-                  <p>A bunch of text</p>
+
+                  <div class="row">                      
+                      <div class="col s12">
+                            <div class="input-field col s12 center">    
+                              <h3 class="card-title">VM Name</h3>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="input-field col s12">    
+                              <span class="col s4">Type</span><span id="templateType" class="col s8">Ubuntu</span>
+                            </div>
+                            <div class="input-field col s12">    
+                              <span class="col s4">OS</span><span id="templateType" class="col s8">Ubuntu</span>
+                            </div>
+                            <div class="input-field col s12">    
+                              <span class="col s4">CPU</span><span id="templateType" class="col s8">Ubuntu</span>
+                            </div>
+                            <div class="input-field col s12">    
+                              <span class="col s4">Memory</span><span id="templateType" class="col s8">Ubuntu</span>
+                            </div>
+                            <div class="input-field col s12">
+                              <span class="col s4">Storage Capacity</span><span id="templateType" class="col s8">Ubuntu</span>
+                            </div>
+
+                      </div>
+
+                    </div>
                 </div>
                 <div class="modal-footer">
-                  <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat ">Close</a>
+                  <a href="#" class="modal-action modal-close waves-effect waves-green btn-flat ">Start/Stop</a>
+                  <a href="#" class="modal-action modal-close waves-effect waves-green btn-flat ">Close</a>
                 </div>
               </div>
 

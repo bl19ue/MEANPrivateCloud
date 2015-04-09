@@ -1,5 +1,5 @@
 angular.module('userModule', ['ui.router'])
-.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider){
+.config(['$stateProvider', '$urlRouterProvider',  function($stateProvider, $urlRouterProvider){
 	$stateProvider
 	.state('login', {
 		url: '/login',
@@ -7,8 +7,8 @@ angular.module('userModule', ['ui.router'])
 		controller: 'UserEntryCtrl'
 	})
 	.state('PC2', {
-		url: '/PC2',
-		templateUrl: '/PC2.html',
+		url: '/pc2',
+		templateUrl: '/pc2.html',
 		controller: 'PC2Ctrl'
 	});
 	

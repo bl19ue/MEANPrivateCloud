@@ -11,6 +11,7 @@ mongoose.connect('mongodb://sumit:sumit@proximus.modulusmongo.net:27017/V2ohusyb
 
 require('./models/User');
 require('./models/Instance');
+require('./models/Template');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');

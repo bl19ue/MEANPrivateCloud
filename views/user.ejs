@@ -21,7 +21,6 @@
 		<script src="/javascripts/controllers/UserEntryCtrl.js"></script>
 		<script src="/javascripts/controllers/PC2Ctrl.js"></script>
 		<script type="text/javascript">
-
 			$(document).ready(function(){
 				// the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
 				$('.modal-trigger').leanModal();
@@ -29,8 +28,6 @@
 		</script>
 
 		<!--		<script src="../public/javascripts/materialize.js"></script>-->
-
-
 	</head>
 
 	<body ng-app='userModule'>
@@ -103,10 +100,6 @@
 						<input id="confirmPassword" type="password" class="validate" ng-model="newrepassword">
 						<label for="confirmPassword">Confirm Password</label>
 			</div>
-					<div class="input-field col s12">
-						<label for="confirmPassword" id="alertmessage">{{alertmessage}}</label>
-			</div>
-						
 					<div class="input-field col s12 center">
 						<button class="btn waves-effect waves-light  grey darken-3" type="submit">Sign Up</button>
 
@@ -175,11 +168,34 @@
 								<!-- Modal Structure -->
 								<div id="vmDetails" class="modal modal-fixed-footer">
 									<div class="modal-content">
-										<h4>VM Details</h4>
-										<p>A bunch of text</p>
+
+										<div class="row">                      
+					                      <div class="col s12">
+					                            <div class="input-field col s12 center">    
+					                              <h3 class="card-title">{{thisinstance.name}}</h3>
 			</div>
-									<div class="modal-footer">
-										<a href="#" class="modal-action modal-close waves-effect waves-green btn-flat ">Close</a>
+					                            <div class="divider"></div>
+					                            <div class="input-field col s12">    
+					                              <span class="col s4">Type</span><span id="templateType" class="col s8">{{thisinstance.type}}</span>
+			</div>
+					                            <div class="input-field col s12">    
+					                              <span class="col s4">OS</span><span id="templateType" class="col s8">{{thisinstance.type}}</span>
+			</div>
+					                            <div class="input-field col s12">    
+					                              <span class="col s4">CPU</span><span id="templateType" class="col s8">{{thisinstance.cpu}}</span>
+			</div>
+					                            <div class="input-field col s12">    
+					                              <span class="col s4">Memory</span><span id="templateType" class="col s8">{{thisinstance.ram}}</span>
+			</div>
+					                            <div class="input-field col s12">
+					                              <span class="col s4">Storage Capacity</span><span id="templateType" class="col s8">{{thisinstance.storage}}</span>
+			</div>
+			</div>
+			</div>
+			</div>
+					                <div class="modal-footer">
+					                  <a href="#" class="modal-action modal-close waves-effect waves-green btn-flat ">Start/Stop</a>
+					                  <a href="#" class="modal-action modal-close waves-effect waves-green btn-flat ">Close</a>
 			</div>
 			</div>
 
@@ -193,11 +209,10 @@
 			</thead>
 
 									<tbody>
-											<tr data-target="vmDetails" class="modal-trigger" ng-repeat="instance in instances">
-
-												<td>{{instance.name}}</td>
-												<td>{{instance.type}}</td>
-												<td>{{instance.status}}</td>
+										<tr data-target="vmDetails" class="modal-trigger" ng-repeat="instance in instances">
+												<td ng-click="saveThisInstance(instance)">{{instance.name}}</td>
+												<td ng-click="saveThisInstance({{instance}})">{{instance.type}}</td>
+												<td ng-click="saveThisInstance({{instance}})">{{instance.status}}</td>
 			</tr>
 			</tbody>
 			</table>
@@ -255,12 +270,6 @@
 			</div>
 		</div>
 		</footer>
-
-
 	<!--  Scripts-->
-
-
-
 	</body>
-
 </html>

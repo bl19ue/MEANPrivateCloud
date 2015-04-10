@@ -19,19 +19,42 @@ router.get('/', function(req, res) {
 
 //This method calls a JAVA Spring Boot API running on localhost:8080
 function performReq(path,method,d){
-
-	var req = rest.method('http://localhost:8080'+ path, {data: d}).on('complete', function(data){
-		console.log(data);
-	});
-
+	var req;
+	var res;
+	
+	if(method=='GET'){
+		req = rest.method('http://localhost:8080'+ path).on('complete', function(data){
+			res = data;
+			console.log(res);
+		});
+	}
+	else{
+		req = rest.method('http://localhost:8080'+ path, {data: d}).on('complete', function(data){
+			res = data;
+			console.log(res);
+		});	
+	}
 
 	req.end();
-
 	req.on('error', function(e) {
 		console.error(e);
 	});
+	return res;
 }
 
+//This method ensures authentication for secured api's
+function ensureAuthorized(req, res, next) {
+    var bearerToken;
+    var bearerHeader = req.headers["authorization"];
+    if (typeof bearerHeader !== 'undefined') {
+        var bearer = bearerHeader.split(" ");
+        bearerToken = bearer[1];
+        req.token = bearerToken;
+        next();
+    } else {
+        res.send(403);
+    }
+}
 
 //This api redirects to user.ejs page
 router.get('/user', function(req, res) {
@@ -88,7 +111,7 @@ router.post('/signup', function(req, res, next) {
 //This api allows user to login. First it checks the username and password if it is blank then it returns Invalid Credentials
 //If credentials are non blank then it searches for the username in User collection. If user is found then it authenticates the password.
 router.post('/login',function(req,res){
-	UserSchema.findOne({email: req.body.email, password: req.body.password}, function(err, user) {
+	UserSchema.findOne({username: req.body.username, password: req.body.password}, function(err, user) {
 		if (err) {
 			res.json({
 				type: false,
@@ -156,6 +179,8 @@ router.post('/user/:username/vm/create', function(req, res, next){
 
 //This api starts vm with vmId - id of user- 'username'
 router.get('/user/:username/vm/:id/start', function(req, res){
+
+
 	console.log(req.params.id);
 	username = req.params.username;
 
@@ -194,17 +219,37 @@ router.get('/user/:username/vm/:id/stop', function(req, res){
 });
 
 //This api gives stats of vm with vmId - id of user- 'username'
-router.get('/user/:username/vm/:id/stats', function(req,res){
-	console.log(req.params.id);
-	var data = {
-		id: req.params.id,
-		VMname: req.params.VMname,
-		state : req.params.state,
-		cpu: req.params.cpu,
-		memory: req.params.memory
-	}
+router.get('/user/:username/vm/:id/stats', ensureAuthorized, function(req,res){
 
-	var request = performReq('/vm/'+ req.params.id+ 'stats', 'get', data);
-	request.end();
+//	authenticateToken(req,res);
+
+	UserSchema.findOne({token: req.token}, function(err, user){
+		if(err){
+			res.json({
+				type:false;
+				data: "Error occured: " + err;
+			});
+		}else{
+			performReq('/vm/'+ req.params.id+ '/stats', 'get').then(function(data){
+					res.json({
+					type: true;
+					data: data;
+				});
+			});
+			
+		}
+	});
+
+	//console.log(req.params.id);
+	// var data = {
+	// 	id: req.params.id,
+	// 	VMname: req.params.VMname,
+	// 	state : req.params.state,
+	// 	cpu: req.params.cpu,
+	// 	memory: req.params.memory
+	// }
+
+	
+	//request.end();
 });
 module.exports = router;

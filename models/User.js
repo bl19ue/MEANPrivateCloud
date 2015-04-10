@@ -5,7 +5,8 @@ var UserSchema = new mongoose.Schema({
 	password: { type: String, required: true },
 	firstname: String,
 	lastname: String,
-	instances: [{type: mongoose.Schema.Types.ObjectId, ref: 'Instance'}]
+	instances: [{type: mongoose.Schema.Types.ObjectId, ref: 'Instance'}],
+	token : String
 });
 
 

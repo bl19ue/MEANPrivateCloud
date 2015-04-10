@@ -19,6 +19,7 @@ angular.module('userModule')
 		console.log("in signup");
 		if($scope.newpassword !== $scope.newrepassword){
 			console.log('Password did not match');
+			$scope.alertmessage = "Passwords doesn't match";
 			//Show incorrect the label
 			return;
 		}

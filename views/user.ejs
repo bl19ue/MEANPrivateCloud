@@ -103,6 +103,10 @@
 						<input id="confirmPassword" type="password" class="validate" ng-model="newrepassword">
 						<label for="confirmPassword">Confirm Password</label>
 			</div>
+					<div class="input-field col s12">
+						<label for="confirmPassword" id="alertmessage">{{alertmessage}}</label>
+			</div>
+						
 					<div class="input-field col s12 center">
 						<button class="btn waves-effect waves-light  grey darken-3" type="submit">Sign Up</button>
 
@@ -128,8 +132,8 @@
 								<li class="tab col s4"><a class="active" href="#dashboard">Dashboard</a></li>
 								<li class="tab col s4"><a href="#launch">Launch Instance</a></li>
 								<li class="tab col s4"><a href="#status">Status</a></li>
-							</ul>
-						</div>
+			</ul>
+			</div>
 
 						<div id="status" class="col s12"></div>
 
@@ -139,32 +143,32 @@
 									<div class="collapsible-header" data-target="modal1" class="modal-trigger">
 										<span class="col s2">
 											<i class="mdi-hardware-desktop-windows"></i>
-										</span>
+			</span>
 										<span class="col s4">VM Name</span>
 										<span class="col s4">Type</span>
 										<span class="col s2">Status</span>
-									</div>
+			</div>
 
 									<div class="collapsible-body">
 										<p>Lorem ipsum dolor sit amet.</p>
-									</div>
-								</li>
+			</div>
+			</li>
 
 								<li>
 									<div class="collapsible-header"><i class="mdi-maps-place"></i>Second</div>
 									<div class="collapsible-body">
 										<p>Lorem ipsum dolor sit amet.</p>
-									</div>
-								</li>
+			</div>
+			</li>
 
 								<li>
 									<div class="collapsible-header"><i class="mdi-social-whatshot"></i>Third</div>
 									<div class="collapsible-body">
 										<p>Lorem ipsum dolor sit amet.</p>
-									</div>
-								</li>
-							</ul>
-						</div>
+			</div>
+			</li>
+			</ul>
+			</div>
 
 						<div id="dashboard" class="col s12">
 							<div class="col s12">
@@ -173,11 +177,11 @@
 									<div class="modal-content">
 										<h4>VM Details</h4>
 										<p>A bunch of text</p>
-									</div>
+			</div>
 									<div class="modal-footer">
 										<a href="#" class="modal-action modal-close waves-effect waves-green btn-flat ">Close</a>
-									</div>
-								</div>
+			</div>
+			</div>
 
 								<table class="hoverable">
 									<thead>
@@ -185,8 +189,8 @@
 											<th data-field="name">VM Name</th>
 											<th data-field="type">Type</th>
 											<th data-field="status">Status</th>
-										</tr>
-									</thead>
+			</tr>
+			</thead>
 
 									<tbody>
 											<tr data-target="vmDetails" class="modal-trigger" ng-repeat="instance in instances">
@@ -194,23 +198,23 @@
 												<td>{{instance.name}}</td>
 												<td>{{instance.type}}</td>
 												<td>{{instance.status}}</td>
-											</tr>
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</div>
+			</tr>
+			</tbody>
+			</table>
+			</div>
+			</div>
+			</div>
 
 
 
-				</div>
+			</div>
 
 				<!--   Icon Section   -->
 			</div>
 			<br>
 			<br>
 
-		</div>
+			</div>
 
 		</script>
 
@@ -256,7 +260,7 @@
 	<!--  Scripts-->
 
 
-	
+
 	</body>
 
 </html>

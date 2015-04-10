@@ -4,6 +4,7 @@ var http = require('http');
 var url = require('url');
 var rest = require('restler');
 var mongoose= require("mongoose");
+var jwt = require("jsonwebtoken");
 
 /*Get */
 var UserSchema = mongoose.model('User');
@@ -40,22 +41,44 @@ router.get('/user', function(req, res) {
 
 //This api adds a new user in User collection
 router.post('/signup', function(req, res, next) {
-	var user = new UserSchema(req.body);
-	console.log("user = " + user);
-	UserSchema.findOne({'username': user.username}, function(err, foundUser){
-		if (err) throw err;
-		if(foundUser){
-			console.log('422');
-			res.json({data : '422'}); //422 - data exists
-		}
-		else{
-			user.save(function(err, user){
-				if(err) { 
-					return next(err); 
-				}
-				console.log("user saved");
-				res.json(user);
-			});	
+	
+	UserSchema.findOne({email: req.body.username, password: req.body.password}, function(err, user) {
+		if (err) {
+			console.log('err');
+			res.json({
+				type: false,
+				data: "Error occured: " + err
+			});
+		} else {
+			if (user) {
+				console.log('exists');
+				res.json({
+					type: false,
+					data: "User already exists!"
+				});
+			} else {
+				console.log('new');
+				var userModel = new UserSchema();
+				
+				userModel.username = req.body.username;
+				userModel.password = req.body.password;
+				userModel.firstname = req.body.firstname;
+				userModel.lastname = req.body.lastname;
+				
+				userModel.save(function(err, user) {
+					console.log('saving user');
+					user.token = jwt.sign(user, 'team01');
+					console.log('token = ' + user.token );
+					user.save(function(err, user1) {
+						console.log('saving user with token' + user1);
+						res.json({
+							type: true,
+							data: user1,
+							token: user1.token
+						});
+					});
+				})
+			}
 		}
 	});
 
@@ -65,38 +88,25 @@ router.post('/signup', function(req, res, next) {
 //This api allows user to login. First it checks the username and password if it is blank then it returns Invalid Credentials
 //If credentials are non blank then it searches for the username in User collection. If user is found then it authenticates the password.
 router.post('/login',function(req,res){
-	var username = req.body.username;
-	var password = req.body.password;
-
-	if (username == '' || password == '') {
-		res.status(401);
-		data = {
-			"message": "Invalid credentials"
-		};
-		res.end(data);
-		
-	}
-
-	UserSchema.findOne({username: username}, function (err, user) {
+	UserSchema.findOne({email: req.body.email, password: req.body.password}, function(err, user) {
 		if (err) {
-			console.log(err);
-			return res.send(401);
-		}
-
-		if (!user){
-			return res.send("Username not found");
-		}
-
-		if (user.password == password){
-			return res.send(user);
-		}
-		else {
-			console.log('pass did not match');
-			//res.status(401);
-			data = {
-				"error": "Invalid credentials"
-			};
-			res.json(data);
+			res.json({
+				type: false,
+				data: "Error occured: " + err
+			});
+		} else {
+			if (user) {
+				res.json({
+					type: true,
+					data: user,
+					token: user.token
+				}); 
+			} else {
+				res.json({
+					type: false,
+					data: "Incorrect email/password"
+				});    
+			}
 		}
 	});
 });

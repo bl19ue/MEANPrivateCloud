@@ -27,7 +27,9 @@ angular.module('userModule')
 		return $http.post('/signup', user).then(function(res){
 			console.log("response for signup: " + res.data);
 			angular.copy(res.data, o.user);
-			$state.go('PC2');
+			$location.url('/PC2');
+			$window.location.href = "/PC2";
+			$window.location.reload();
 		});
 	}
 	

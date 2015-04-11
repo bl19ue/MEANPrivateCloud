@@ -5,6 +5,7 @@ var url = require('url');
 var rest = require('restler');
 var mongoose= require("mongoose");
 var jwt = require("jsonwebtoken");
+var q = require('q');
 
 /*Get */
 var UserSchema = mongoose.model('User');
@@ -18,81 +19,29 @@ router.get('/', function(req, res) {
 });
 
 //This method calls a JAVA Spring Boot API running on localhost:8080
-function performReq(path,method,d, username, request, response){
-	var req;
-	var res;
+var performReqObject = {
+	performReq : function(path,method,d, username, request, response){
+		var deferred = q.defer();
+		var req;
+		var res;
 
-	console.log('in perform request');
-	if(method == 'get'){
-		console.log('Get request with path=' + path);
-		rest.get('http://localhost:8080'+ path).on('complete', function(data){
-			res = data;
-			console.log('res = ' + res);
-			response.json({
-				type: true,
-				data: data
+		console.log('in perform request');
+		if(method == 'get'){
+			console.log('Get request with path=' + path);
+			rest.get('http://localhost:8080'+ path).on('complete', function(data){
+				deferred.resolve(data);
 			});
-		});
-	}
-	else{
-		console.log('Post request with path=' + path);
-		rest.postJson('http://localhost:8080'+ path, {data: d}).on('complete', function(data){
-			UserSchema.findOne({username:username}, function(err, user){
-				if(err){
-					res.json({
-					});
-				}
-				else{
-					if(user){
-						user.instances.push(data.name);
-						user.save(function(err, user){
-							if(err){
-								
-							}
-							else{
-								if(user){
-									var instanceModel = new InstanceSchema(data);
-									instanceModel.save(err, function(err, instance){
-										if(err){
-											
-										}
-									});
-								}
-								else{
-								
-								}
-							}
-						});
-						res.json()
-					}
-				}
-			});			
-		});	
-	}
-
-	console.log(res);
-	//return res;
-	UserSchema.findOne({username: username}, function(err, user){
-		if(err) {
-			console.log('err in saving vm data in user');
-			res.json({
-				type: false,
-				data: "Error occured: " + err
-			});		
 		}
 		else{
-			if(user){
-				console.log('saving vm data in user');
-				user.instances.push(data);
-				response.json({
-					type: true,
-					data: data
-				});					
-			}
+			console.log('Post request with path=' + path);
+			rest.postJson('http://localhost:8080'+ path, {data: d}).on('complete', function(data){
+				deferred.resolve(data);
+			});	
 		}
-	});
 
-})
+		return deferred.promise;
+
+	}
 }
 
 
@@ -101,7 +50,7 @@ function performReq(path,method,d, username, request, response){
 //		console.error(e);
 //	});
 
-}
+
 
 //This method ensures authentication for secured api's
 function ensureAuthorized(req, res, next) {
@@ -244,7 +193,14 @@ router.post('/user/:username/vm/:vmname/create', function(req, res, next){
 	//	});
 	//
 	var vmObject = {'vmName' : req.body.vmName};
-	performReq('/vm/'+ req.params.vmname+ '/create', 'post', vmObject, req.params.username, req, res);
+	var myRequest = performReqObject.performReq('/vm/'+ req.params.vmname+ '/create', 'post', vmObject, req.params.username, req, res);
+	
+	myRequest.done(function(data){
+		res.json({
+			type: true,
+			data: data
+		});
+	});
 	//	.then(function(data){
 	//		res.json({
 	//			type: true,
@@ -341,7 +297,14 @@ router.get('/user/:username/vm/:vmname/status', function(req, res){
 		}
 		else{
 			console.log('found user');
-			performReq('/vm/'+ req.params.vmname+ '/status', 'get', null, req.params.username, req, res);
+			var myRequest = performReqObject.performReq('/vm/'+ req.params.vmname+ '/status', 'get', null, req.params.username, req, res);
+			
+			myRequest.done(function(data){
+				res.json({
+					type:true,
+					data: data
+				});
+			});
 		}
 	});
 

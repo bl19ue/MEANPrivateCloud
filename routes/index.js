@@ -8,8 +8,8 @@ var jwt = require("jsonwebtoken");
 
 /*Get */
 var UserSchema = mongoose.model('User');
-var Template = mongoose.model('Template');
-var Instance = mongoose.model('Instance');
+var TemplateSchema = mongoose.model('Template');
+var InstanceSchema = mongoose.model('Instance');
 
 /* GET home page. */
 router.get('/', function(req, res) {
@@ -18,42 +18,103 @@ router.get('/', function(req, res) {
 });
 
 //This method calls a JAVA Spring Boot API running on localhost:8080
-function performReq(path,method,d){
+function performReq(path,method,d, username, request, response){
 	var req;
 	var res;
-	
-	if(method=='GET'){
-		req = rest.method('http://localhost:8080'+ path).on('complete', function(data){
+
+	console.log('in perform request');
+	if(method == 'get'){
+		console.log('Get request with path=' + path);
+		rest.get('http://localhost:8080'+ path).on('complete', function(data){
 			res = data;
-			console.log(res);
+			console.log('res = ' + res);
+			response.json({
+				type: true,
+				data: data
+			});
 		});
 	}
 	else{
-		req = rest.method('http://localhost:8080'+ path, {data: d}).on('complete', function(data){
-			res = data;
-			console.log(res);
+		console.log('Post request with path=' + path);
+		rest.postJson('http://localhost:8080'+ path, {data: d}).on('complete', function(data){
+			UserSchema.findOne({username:username}, function(err, user){
+				if(err){
+					res.json({
+					});
+				}
+				else{
+					if(user){
+						user.instances.push(data.name);
+						user.save(function(err, user){
+							if(err){
+								
+							}
+							else{
+								if(user){
+									var instanceModel = new InstanceSchema(data);
+									instanceModel.save(err, function(err, instance){
+										if(err){
+											
+										}
+									});
+								}
+								else{
+								
+								}
+							}
+						});
+						res.json()
+					}
+				}
+			});			
 		});	
 	}
 
-	req.end();
-	req.on('error', function(e) {
-		console.error(e);
+	console.log(res);
+	//return res;
+	UserSchema.findOne({username: username}, function(err, user){
+		if(err) {
+			console.log('err in saving vm data in user');
+			res.json({
+				type: false,
+				data: "Error occured: " + err
+			});		
+		}
+		else{
+			if(user){
+				console.log('saving vm data in user');
+				user.instances.push(data);
+				response.json({
+					type: true,
+					data: data
+				});					
+			}
+		}
 	});
-	return res;
+
+})
+}
+
+
+//	req.end();
+//	req.on('error', function(e) {
+//		console.error(e);
+//	});
+
 }
 
 //This method ensures authentication for secured api's
 function ensureAuthorized(req, res, next) {
-    var bearerToken;
-    var bearerHeader = req.headers["authorization"];
-    if (typeof bearerHeader !== 'undefined') {
-        var bearer = bearerHeader.split(" ");
-        bearerToken = bearer[1];
-        req.token = bearerToken;
-        next();
-    } else {
-        res.send(403);
-    }
+	var bearerToken;
+	var bearerHeader = req.headers["authorization"];
+	if (typeof bearerHeader !== 'undefined') {
+		var bearer = bearerHeader.split(" ");
+		bearerToken = bearer[1];
+		req.token = bearerToken;
+		next();
+	} else {
+		res.send(403);
+	}
 }
 
 //This api redirects to user.ejs page
@@ -64,8 +125,8 @@ router.get('/user', function(req, res) {
 
 //This api adds a new user in User collection
 router.post('/signup', function(req, res, next) {
-	
-	UserSchema.findOne({email: req.body.username, password: req.body.password}, function(err, user) {
+
+	UserSchema.findOne({username: req.body.username, password: req.body.password}, function(err, user) {
 		if (err) {
 			console.log('err');
 			res.json({
@@ -82,12 +143,12 @@ router.post('/signup', function(req, res, next) {
 			} else {
 				console.log('new');
 				var userModel = new UserSchema();
-				
+
 				userModel.username = req.body.username;
 				userModel.password = req.body.password;
 				userModel.firstname = req.body.firstname;
 				userModel.lastname = req.body.lastname;
-				
+
 				userModel.save(function(err, user) {
 					console.log('saving user');
 					user.token = jwt.sign(user, 'team01');
@@ -117,14 +178,16 @@ router.post('/login',function(req,res){
 				type: false,
 				data: "Error occured: " + err
 			});
-		} else {
+		} 
+		else {
 			if (user) {
 				res.json({
 					type: true,
 					data: user,
 					token: user.token
 				}); 
-			} else {
+			} 
+			else {
 				res.json({
 					type: false,
 					data: "Incorrect email/password"
@@ -140,40 +203,54 @@ router.get('/user/:username/vm/list', function(req, res){
 
 	var username = req.body.username;
 
-	var d = UserSchema.findOne({'username': username}, function(err, username){
+	UserSchema.findOne({'username': username}, function(err, user){
 
-		var instances = username.instances
-
-		Instance.find({'_id': {$in: instances}}, function(err, instance_id){
-
-			var ids = [] ;
-
-			for(var i =0; i< instances.length; i++){
-
-				ids.push(username.instances.instance_id);
+		var instances = user.instances;
+		InstanceSchema.find({'name': {$in : instances}}, function(err, instances){
+			if(err){
+				res.json({
+					type: false,
+					data: "Error occured: " + err
+				});
 			}
-			console.log(ids);
-			return ids;
+			else{
+				if(instances){
+					res.json({
+						type: true,
+						data: instances
+					});
+				}
+				else{
+					res.json({
+						type: false,
+						data: "No instances found"
+					});
+				}
+			}
 		});
 	});
-	var reqGet = performReq('/vm/' + req.params.id +'/list','get',d);
-	reqGet.end();
 });
 
 //This api creates a VM for user- 'username'
-router.post('/user/:username/vm/create', function(req, res, next){
-	console.log(req.params.id);
-	var id = req.params.id;
-	var name = ['Ubuntu','Windows'] 
-
-	var template_name = Template.find({'name': {$in: name} }).toArray( function(err, name){
-		if (err) throw err;
-		console.log(name);
-		return (name);
-	});
-
-	var reqGet = performReq('/vm/'+ req.params.name+ '/create', 'post', template_name);
-	reqGet.end();
+router.post('/user/:username/vm/:vmname/create', function(req, res, next){
+	console.log('username and vmname:' + req.params.username + " " + req.params.vmname);
+	console.log('post body:' + req.body.vmName);
+	//var id = req.params.id;
+	//	
+	//	var template_name = Template.find({'name': {$in: name} }).toArray( function(err, name){
+	//		if (err) throw err;
+	//		console.log(name);
+	//		return (name);
+	//	});
+	//
+	var vmObject = {'vmName' : req.body.vmName};
+	performReq('/vm/'+ req.params.vmname+ '/create', 'post', vmObject, req.params.username, req, res);
+	//	.then(function(data){
+	//		res.json({
+	//			type: true,
+	//			data: data
+	//		});
+	//		//reqGet.end();
 
 });
 
@@ -221,22 +298,23 @@ router.get('/user/:username/vm/:id/stop', function(req, res){
 //This api gives stats of vm with vmId - id of user- 'username'
 router.get('/user/:username/vm/:id/stats', ensureAuthorized, function(req,res){
 
-//	authenticateToken(req,res);
+	//	authenticateToken(req,res);
 
 	UserSchema.findOne({token: req.token}, function(err, user){
 		if(err){
 			res.json({
-				type:false;
-				data: "Error occured: " + err;
+				type:false,
+				data: "Error occured: " + err
 			});
-		}else{
+		}
+		else{
 			performReq('/vm/'+ req.params.id+ '/stats', 'get').then(function(data){
-					res.json({
-					type: true;
-					data: data;
+				res.json({
+					type: true,
+					data: data
 				});
 			});
-			
+
 		}
 	});
 
@@ -249,7 +327,24 @@ router.get('/user/:username/vm/:id/stats', ensureAuthorized, function(req,res){
 	// 	memory: req.params.memory
 	// }
 
-	
+
 	//request.end();
 });
+
+router.get('/user/:username/vm/:vmname/status', function(req, res){
+	UserSchema.findOne({username: req.params.username}, function(err, user){
+		if(err){
+			res.json({
+				type:false,
+				data: "Error occured: " + err
+			});
+		}
+		else{
+			console.log('found user');
+			performReq('/vm/'+ req.params.vmname+ '/status', 'get', null, req.params.username, req, res);
+		}
+	});
+
+});
+
 module.exports = router;

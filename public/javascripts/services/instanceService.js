@@ -1,53 +1,49 @@
 angular.module('userModule')
-.factory('instance', ['$http', '$state', function($http, $state){
-	var o = {
-		instances: [
-			{
-				name: 'Sumit VM',
-				type: 'Ubuntu',
-				cpu: 8,
-				ram: 32,
-				storage: 2,
-				status: 'Started',
-			},
-			{
-				name: 'Piyush VM',
-				type: 'Windows',
-				cpu: 2,
-				ram: 12,
-				storage: 2,
-				status: 'Stopped',
-			},
-			{
-				name: 'Vaibhav VM',
-				type: 'Ubuntu',
-				cpu: 18,
-				ram: 22,
-				storage: 22,
-				status: 'Started',
-			}
-		]
-	};
+	.factory('instance', ['$http', '$state', function($http, $state){
+		var o = {
+			instances: []
+		};
 
-	o.create = function(){
-		
-	}
+		o.getAllVMs = function(username){
+			console.log('username:' + username);
+			return $http.get('/user/'+ username +'/vm/list').then(function(res){
+				//console.log("Response data = " + res.data.data[0].name);
+				console.log('res.data.type:' + res.data.type);
 
-	o.delete = function(){
-		
-	}
+				if(!res.data.type){
+					console.log('error on getting all VMs');
+					return null;
+				}
+				else{
+					angular.copy(res.data.data, o.instances);
+					console.log('res.data.data: ' + res.data.data);
+					return res.data.data;
+				}
+				console.log('found nothing');
+				return null;
+			});
+		}
 
-	o.start = function(){
 
-	}
-	
-	o.stop = function(){
+		o.create = function(){
 
-	}
+		}
 
-	o.getStats = function(){
-	
-	}
-	
-	return o;
-}]);
+		o.delete = function(){
+
+		}
+
+		o.start = function(){
+
+		}
+
+		o.stop = function(){
+
+		}
+
+		o.getStats = function(){
+
+		}
+
+		return o;
+	}]);

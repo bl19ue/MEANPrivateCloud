@@ -20,9 +20,15 @@
 		<script src="/javascripts/services/instanceService.js"></script>
 		<script src="/javascripts/controllers/UserEntryCtrl.js"></script>
 		<script src="/javascripts/controllers/PC2Ctrl.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.12/js/ngDialog.min.js"></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.12/css/ngDialog.min.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.12/css/ngDialog-theme-default.css">
+		
+		
 		<script type="text/javascript">
 			$(document).ready(function(){
 				// the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
+				console.log('lllloooollll');
 				$('.modal-trigger').leanModal();
 			});
 		</script>
@@ -116,6 +122,7 @@
 		</script>
 
 		<script type="text/ng-template" id="/PC2.html">
+		
 		<div class="container">
 			<div class="section">
 				<div class="row">
@@ -165,7 +172,44 @@
 
 						<div id="dashboard" class="col s12">
 							<div class="col s12">
-								<!-- Modal Structure -->
+								
+
+								<table class="hoverable">
+									<thead>
+										<tr>
+											<th data-field="name">VM Name</th>
+											<th data-field="type">Type</th>
+											<th data-field="status">Status</th>
+			</tr>
+			</thead>
+
+									<tbody>
+										<tr data-target="vmDetails" class="modal-trigger" ng-repeat="instance in instances">
+												<td ng-click="saveThisInstance(instance)">{{instance.name}}</td>
+												<td ng-click="saveThisInstance(instance)">{{instance.type}}</td>
+												<td ng-click="saveThisInstance(instance)">{{instance.status}}</td>
+			</tr>
+			</tbody>
+			</table>
+			</div>
+			</div>
+			</div>
+
+
+
+			</div>
+
+				<!--   Icon Section   -->
+			</div>
+			<br>
+			<br>
+
+			</div>
+
+		</script>
+
+		<script type="text/ng-template" id="vmdetails">
+			<!-- Modal Structure -->
 								<div id="vmDetails" class="modal modal-fixed-footer">
 									<div class="modal-content">
 
@@ -198,41 +242,8 @@
 					                  <a href="#" class="modal-action modal-close waves-effect waves-green btn-flat ">Close</a>
 			</div>
 			</div>
-
-								<table class="hoverable">
-									<thead>
-										<tr>
-											<th data-field="name">VM Name</th>
-											<th data-field="type">Type</th>
-											<th data-field="status">Status</th>
-			</tr>
-			</thead>
-
-									<tbody>
-										<tr data-target="vmDetails" class="modal-trigger" ng-repeat="instance in instances">
-												<td ng-click="saveThisInstance(instance)">{{instance.name}}</td>
-												<td ng-click="saveThisInstance({{instance}})">{{instance.type}}</td>
-												<td ng-click="saveThisInstance({{instance}})">{{instance.status}}</td>
-			</tr>
-			</tbody>
-			</table>
-			</div>
-			</div>
-			</div>
-
-
-
-			</div>
-
-				<!--   Icon Section   -->
-			</div>
-			<br>
-			<br>
-
-			</div>
-
 		</script>
-
+		
 		<footer class="page-footer grey darken-3">
 
 			<div class="container">

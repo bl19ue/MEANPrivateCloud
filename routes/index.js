@@ -63,6 +63,34 @@ router.get('/user', function(req, res) {
 
 });
 
+//This api allows user to login. First it checks the username and password if it is blank then it returns Invalid Credentials
+//If credentials are non blank then it searches for the username in User collection. If user is found then it authenticates the password.
+router.post('/login',function(req,res){
+	UserSchema.findOne({username: req.body.username, password: req.body.password}, function(err, user) {
+		if (err) {
+			res.json({
+				type: false,
+				data: "Error occured: " + err
+			});
+		} 
+		else {
+			if (user) {
+				res.json({
+					type: true,
+					data: user,
+					token: user.token
+				}); 
+			} 
+			else {
+				res.json({
+					type: false,
+					data: "Incorrect email/password"
+				});    
+			}
+		}
+	});
+});
+
 //This api adds a new user in User collection
 router.post('/signup', function(req, res, next) {
 
@@ -109,42 +137,28 @@ router.post('/signup', function(req, res, next) {
 
 });
 
-//This api allows user to login. First it checks the username and password if it is blank then it returns Invalid Credentials
-//If credentials are non blank then it searches for the username in User collection. If user is found then it authenticates the password.
-router.post('/login',function(req,res){
-	UserSchema.findOne({username: req.body.username, password: req.body.password}, function(err, user) {
-		if (err) {
+//This api gives list of all VMs of user- 'username'
+router.get('/user/:username/vm/list', function(req, res){
+
+	var username = req.params.username;
+	console.log('username in list: ' + username);
+	UserSchema.findOne({'username': username}, function(err, user){
+		console.log('user in find of list: ' + user);
+		if(err){
 			res.json({
 				type: false,
 				data: "Error occured: " + err
 			});
-		} 
-		else {
-			if (user) {
-				res.json({
-					type: true,
-					data: user,
-					token: user.token
-				}); 
-			} 
-			else {
-				res.json({
-					type: false,
-					data: "Incorrect email/password"
-				});    
-			}
 		}
-	});
-});
-
-//This api gives list of all VMs of user- 'username'
-router.get('/user/:username/vm/list', function(req, res){
-
-	var username = req.body.username;
-
-	UserSchema.findOne({'username': username}, function(err, user){
-
+		if(!user){
+			res.json({
+				type: false,
+				data: "User not found"
+			});
+		}
+			
 		var instancesName = user.instances;
+		console.log('users instances: ' + user.instances);
 		InstanceSchema.find({'name': {$in : instancesName}}, function(err, instances){
 			if(err){
 				res.json({
@@ -154,6 +168,7 @@ router.get('/user/:username/vm/list', function(req, res){
 			}
 			else{
 				if(instances){
+					console.log('instance name: ' + instances[0].name);
 					res.json({
 						type: true,
 						data: instances

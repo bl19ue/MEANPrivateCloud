@@ -20,21 +20,19 @@ router.get('/', function(req, res) {
 
 //This method calls a JAVA Spring Boot API running on localhost:8080
 var performReqObject = {
-	performReq : function(path,method,d, username, request, response){
+	performReq : function(path,method,d){
 		var deferred = q.defer();
-		var req;
-		var res;
 
 		console.log('in perform request');
 		if(method == 'get'){
 			console.log('Get request with path=' + path);
-			rest.get('http://localhost:8080'+ path).on('complete', function(data){
+			rest.get('http://localhost:8080'+ path, {timeout: 9000000}).on('complete', function(data){
 				deferred.resolve(data);
 			});
 		}
 		else{
 			console.log('Post request with path=' + path);
-			rest.postJson('http://localhost:8080'+ path, {data: d}).on('complete', function(data){
+			rest.postJson('http://localhost:8080'+ path, d, {timeout: 9000000}).on('complete', function(data){
 				deferred.resolve(data);
 			});	
 		}
@@ -43,13 +41,6 @@ var performReqObject = {
 
 	}
 }
-
-
-//	req.end();
-//	req.on('error', function(e) {
-//		console.error(e);
-//	});
-
 
 
 //This method ensures authentication for secured api's
@@ -146,7 +137,6 @@ router.post('/login',function(req,res){
 	});
 });
 
-
 //This api gives list of all VMs of user- 'username'
 router.get('/user/:username/vm/list', function(req, res){
 
@@ -154,8 +144,8 @@ router.get('/user/:username/vm/list', function(req, res){
 
 	UserSchema.findOne({'username': username}, function(err, user){
 
-		var instances = user.instances;
-		InstanceSchema.find({'name': {$in : instances}}, function(err, instances){
+		var instancesName = user.instances;
+		InstanceSchema.find({'name': {$in : instancesName}}, function(err, instances){
 			if(err){
 				res.json({
 					type: false,
@@ -184,71 +174,171 @@ router.get('/user/:username/vm/list', function(req, res){
 router.post('/user/:username/vm/:vmname/create', function(req, res, next){
 	console.log('username and vmname:' + req.params.username + " " + req.params.vmname);
 	console.log('post body:' + req.body.vmName);
-	//var id = req.params.id;
-	//	
-	//	var template_name = Template.find({'name': {$in: name} }).toArray( function(err, name){
-	//		if (err) throw err;
-	//		console.log(name);
-	//		return (name);
-	//	});
-	//
+
 	var vmObject = {'vmName' : req.body.vmName};
-	var myRequest = performReqObject.performReq('/vm/'+ req.params.vmname+ '/create', 'post', vmObject, req.params.username, req, res);
-	
+	var myRequest = performReqObject.performReq('/vm/'+ req.params.vmname+ '/create', 'post', vmObject);
+
 	myRequest.done(function(data){
-		res.json({
-			type: true,
-			data: data
+		console.log(data);
+		var instanceModel = new InstanceSchema(data);
+		instanceModel.save(function(err, instance){
+			if(err){
+				res.json({
+					type:false,
+					data: "Could not save instance [in create] into db: " + err
+				});
+			}
+			else{
+				if(instance){
+					UserSchema.findOne({username: req.params.username}, function(err, user){
+						if(err){
+							res.json({
+								type:false,
+								data: "Could not find this user [in create]: " + err
+							});		
+						}
+						else{
+							if(user){
+								user.instances.push(data.name);
+								user.save(function(err, user){
+									if(err){
+										res.json({
+											type:false,
+											data: "Instance data could not be saved into user" + err
+										});			
+									}
+									else{
+										res.json({
+											type:true,
+											data: instance
+										});		
+									}
+								});
+								
+							}
+							else{
+								res.json({
+									type:false,
+									data: "Could not find this user [in create]: " + err
+								});		
+							}
+						}
+					});				
+				}
+				else{
+					res.json({
+						type:false,
+						data: "No instance found with name: " + req.params.vmname
+					});
+				}
+			}
 		});
 	});
-	//	.then(function(data){
-	//		res.json({
-	//			type: true,
-	//			data: data
-	//		});
-	//		//reqGet.end();
+
 
 });
 
 //This api starts vm with vmId - id of user- 'username'
-router.get('/user/:username/vm/:id/start', function(req, res){
+router.get('/user/:username/vm/:vmname/start', function(req, res){
+	UserSchema.findOne({username: req.params.username, instances: req.params.vmname}, function(err, user){
+		if(err){
+			res.json({
+				type:false,
+				data: "Error occured: " + err
+			});
+		}
+		else{
+			if(user){
+				var myRequest = performReqObject.performReq('/vm/'+ req.params.vmname+ '/start', 'get', null);
 
-
-	console.log(req.params.id);
-	username = req.params.username;
-
-	var data = UserSchema.find({'username': username}, function(err, username){
-		var id = username.instances;
-		Instance.find({'_id': {$in: id}}, function(err, id){
-			if (err) throw err;
-			else
-				console.log(id);
-			return (id);
-		});
+				myRequest.done(function(data){
+					InstanceSchema.findOne({name: req.params.vmname}, function(err, instance){
+						instance.status = 'poweredOn'
+						instance.save(function(err, instance){
+							if(err){
+								res.json({
+									type:false,
+									data: "Could not save instance [in start] into db: " + err
+								});
+							}
+							else{
+								if(instance){
+									res.json({
+										type:true,
+										data: instance
+									});					
+								}
+								else{
+									res.json({
+										type:false,
+										data: "No instance found [in start] with name: " + req.params.vmname
+									});
+								}
+							}
+						});
+					});	
+				});
+			}
+			else{
+				res.json({
+					type:false,
+					data: "User not found [in start]"
+				});					
+			}
+		}
 	});
-
-	var reqGet = performReq('/vm/'+ req.params.id + '/start', 'get', data);
-
-	reqGet.end();
 
 });
 
 //This api stops vm with vmId - id of user- 'username'
-router.get('/user/:username/vm/:id/stop', function(req, res){
-	console.log(req.params.id);
-	username = req.params.username;
+router.get('/user/:username/vm/:vmname/stop', function(req, res){
+	UserSchema.findOne({username: req.params.username, instances: req.params.vmname}, function(err, user){
+		if(err){
+			res.json({
+				type:false,
+				data: "Error occured: " + err
+			});
+		}
+		else{
+			if(user){
+				var myRequest = performReqObject.performReq('/vm/'+ req.params.vmname+ '/stop', 'get', null);
 
-	var data = UserSchema.find({'username': username}, function(err, username){
-		var id = username.instances;
-		Instance.find({'_id': {$in: id}}), function(err, id){
-			if (err) throw err;
-			else
-				console.log(id);
-			return (id);
+				myRequest.done(function(data){
+					InstanceSchema.findOne({name: req.params.vmname}, function(err, instance){
+						instance.status = 'poweredOff'
+						instance.save(function(err, instance){
+							if(err){
+								res.json({
+									type:false,
+									data: "Could not save instance [in stop] into db: " + err
+								});
+							}
+							else{
+								if(instance){
+									res.json({
+										type:true,
+										data: instance
+									});					
+								}
+								else{
+									res.json({
+										type:false,
+										data: "No instance found [in stop] with name: " + req.params.vmname
+									});
+								}
+							}
+						});
+					});	
+				});
+			}
+			else{
+				res.json({
+					type:false,
+					data: "User not found [in stop]"
+				});					
+			}
 		}
 	});
-	var request = performReq('/vm/'+ req.params.id + 'stop', 'get', data);
-	request.end();
 });
 
 //This api gives stats of vm with vmId - id of user- 'username'
@@ -296,14 +386,36 @@ router.get('/user/:username/vm/:vmname/status', function(req, res){
 			});
 		}
 		else{
-			console.log('found user');
-			var myRequest = performReqObject.performReq('/vm/'+ req.params.vmname+ '/status', 'get', null, req.params.username, req, res);
-			
+			console.log('found user, now requesting the status of this VM');
+			var myRequest = performReqObject.performReq('/vm/'+ req.params.vmname+ '/status', 'get', null);
+
 			myRequest.done(function(data){
-				res.json({
-					type:true,
-					data: data
+				InstanceSchema.findOne({name: req.params.vmname}, function(err, instance){
+					instance.status = data;
+					instance.save(function(err, instance){
+						if(err){
+							res.json({
+								type:false,
+								data: "Could not save status into db: " + err
+							});
+						}
+						else{
+							if(instance){
+								res.json({
+									type:true,
+									data: instance
+								});					
+							}
+							else{
+								res.json({
+									type:false,
+									data: "No instance found with name: " + req.params.vmname
+								});
+							}
+						}
+					});
 				});
+
 			});
 		}
 	});

@@ -24,21 +24,49 @@ angular.module('userModule')
 			});
 		}
 
+		o.startStop = function(thisinstance, user){
+			console.log('in start with instance:' + thisinstance.name);
+			var doWork;
+			if(thisinstance.status == 'poweredOff'){
+				doWork = 'start';
+			}
+			else{
+				doWork = 'stop';
+			}
 
-		o.create = function(){
+			console.log('the do work is:' + doWork);
 
+			return $http.get('/user/' + user.username + '/vm/' + thisinstance.name + '/' + doWork).then(function(res){
+				console.log('res.data.type in start:' + res.data.type);
+				if(!res.data.type){
+					console.log('error on starting/stopping the vm:' + thisinstance.name);
+					return null;
+				}
+				else{
+					console.log('res.data.data in start/stop: ' + res.data.data);
+					o.instances.forEach(function(instance){
+						if(instance.name == res.data.data.name){
+							instance.status = res.data.data.status;
+						}
+					});
+					return res.data.data;
+				}
+			});
 		}
 
-		o.delete = function(){
-
-		}
-
-		o.start = function(){
-
-		}
-
-		o.stop = function(){
-
+		o.create = function(templateName, newVMName, user){
+			return $http.post('/user/' + user.username + '/vm/' + templateName + '/create', newVMName).then(function(res){
+				console.log('res.data.type in create:' + res.data.type);
+				if(!res.data.type){
+					console.log('error on creating the vm:' + newVMName);
+					return null;
+				}
+				else{
+					console.log('res.data.data in create: ' + res.data.data);
+					o.instances.push(res.data.data);
+					return res.data.data;
+				}
+			});
 		}
 
 		o.getStats = function(){

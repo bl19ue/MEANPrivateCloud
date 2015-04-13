@@ -205,7 +205,7 @@ router.post('/vm/:vmname/create', function(req, res, next){
 	var myRequest = performReqObject.performReq('/vm/'+ req.params.vmname+ '/create', 'post', vmObject);
 
 	myRequest.done(function(data){
-		if(data==null || data=='Error'){
+		if(data==null || data=='Error' || data=='undefined'){
 			res.json({
 					type:false,
 					data: "Could not save instance [in create] into db: " + err

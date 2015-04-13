@@ -16,8 +16,9 @@ angular.module('userModule')
 			else{
 				angular.copy(res.data.data, o.user);
 				console.log('user data in login ng '+ res.data.data.username);
-				$state.go('PC2');
-				
+				$state.go('dashboard');
+				//$state.reload();
+
 				//$window.location.reload();
 			}
 		})
@@ -34,9 +35,7 @@ angular.module('userModule')
 			else{
 				angular.copy(res.data.data, o.user);
 				console.log("response for signup: " + res.data);
-				$location.url('/PC2');
-				$window.location.href = "/PC2";
-				$window.location.reload();
+				$state.go('dashboard');
 			}
 			
 		});

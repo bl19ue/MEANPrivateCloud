@@ -1,4 +1,4 @@
-angular.module('userModule', ['ui.router', 'ngDialog'])
+angular.module('userModule', ['ui.router'])
 .config(['$stateProvider', '$urlRouterProvider',  function($stateProvider, $urlRouterProvider){
 	$stateProvider
 	.state('login', {
@@ -6,16 +6,16 @@ angular.module('userModule', ['ui.router', 'ngDialog'])
 		templateUrl: '/login.html',
 		controller: 'UserEntryCtrl'
 	})
-	.state('PC2', {
-		url: '/PC2',
-		templateUrl: '/PC2.html',
+	.state('dashboard', {
+		url: '/dashboard',
+		templateUrl: '/dashboard.html',
 		resolve: {
 			
 			PC2: ['instance', 'user', function(instance, user){
 				
 				console.log('user in resolve:' + user.user.username);
 				
-				var instances = instance.getAllVMs('ken');
+				var instances = instance.getAllVMs(user.user.username);
 				
 				console.log('instances in resolve:' + instances.name);
 				

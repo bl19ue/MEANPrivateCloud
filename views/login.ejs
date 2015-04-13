@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <!--Import materialize.css-->
+  <link type="text/css" rel="stylesheet" href="stylesheets/materialize.min.css"  media="screen,projection"/>
+  <!--Let browser know website is optimized for mobile-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <title>Login Page</title>
+
+  <!--  Scripts-->
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="javascripts/materialize.js"></script>  
+
+  <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.96.0/css/materialize.min.css">
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.96.0/js/materialize.min.js"></script>
+</head>
+<body>
+  <nav class="grey darken-3 lighten-1" role="navigation">
+    <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">VM Manager</a>
+      <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="mdi-navigation-menu"></i></a>
+    </div>
+  </nav>
+  
+
+  <div class="container">
+    <div class="section">
+      <div class="row">
+          <div class="input-field col s12 center">    
+            <label class="error-color" id="error" for="error"></label>
+          </div>      
+      </div>
+      <div class="row">
+        
+      <form class="col s6">
+        <h4>Sign In</h4>
+         <div class="input-field col s12">    
+          <input id="userName" type="text" class="validate">
+          <label for="userName">User Name</label>
+        </div>
+        <div class="input-field col s12">    
+          <input id="password" type="password" class="validate">
+            <label for="password">Password</label>
+        </div>
+        <div class="input-field col s12 center">          
+          <a  class="btn waves-effect waves-light  grey darken-3" onclick="login();">Sign In</a>
+        </div>
+
+          
+      </form>
+      
+      <form id="signupForm" class="col s6" method="POST" action="/signup">
+        <h4>Sign Up</h4>
+        <div class="input-field col s12">    
+          <input id="firstName" type="text" class="validate">
+          <label for="firstName">First Name</label>
+        </div>
+        <div class="input-field col s12">    
+          <input id="lastName" type="text" class="validate">
+          <label for="lastName">Last Name</label>
+        </div>
+         <div class="input-field col s12">    
+          <input id="userName" type="text" class="validate">
+          <label for="email">User Name</label>
+        </div>
+        <div class="input-field col s12">    
+          <input id="password" type="password" class="validate">
+            <label for="password">Password</label>
+            <!-- <i><img class="circle" src="../public/images/help.jpg" height="20px" weight="20px" onmouseover="showDvHelp();" onmouseout='hideDvHelp();'/> -->
+              <div id="dvHelp" style="display:none; float:right; width:225px"></div>
+              <progress id="pBarPasswordStrength" style="display:none" max="100" value="0"></progress>
+              <label id="lblPasswordStrength" style="float:right"></label></i>
+        </div>    
+        <div class="input-field col s12">    
+          <input id="confirmPassword" type="password" class="validate">
+            <label for="confirmPassword">Confirm Password</label>
+        </div>
+        <div class="input-field col s12 center"><!-- 
+          <button class="btn waves-effect waves-light  grey darken-3" type="submit" name="action">Sign Up
+          </button> -->
+          <a  class="btn waves-effect waves-light  grey darken-3" onclick="signup();">Sign Up</a>
+        </div>
+      </form>
+      </div>
+
+      <!--   Icon Section   -->
+    </div>
+    <br><br>
+
+  </div>
+
+  <footer class="page-footer grey darken-3">
+
+<div class="container">
+      <div class="row">
+        <div class="col l6 s12">
+          <h5 class="white-text">TEAM 01</h5>
+          <p class="grey-text text-lighten-4">We are a team of college students working on this project like it's our full time job. Any amount would help support and continue development on this project and is greatly appreciated.</p>
+        </div>
+        <div class="col l3 s12">
+          <h5 class="white-text">Team Members</h5>
+          <ul>
+            <li><a class="white-text" href="#!">Piyush</a></li>
+            <li><a class="white-text" href="#!">Sumit</a></li>
+            <li><a class="white-text" href="#!">Vaibhav</a></li>
+            <li><a class="white-text" href="#!">Surabhi</a><li><a class="white-text" href="#!">Prajakta</a></li></li>
+          </ul>
+        </div>
+        <div class="col l3 s12">
+          <h5 class="white-text">Connect</h5>
+          <ul>
+            <li><a class="white-text" href="#!">Link 1</a></li>
+            <li><a class="white-text" href="#!">Link 2</a></li>
+            <li><a class="white-text" href="#!">Link 3</a></li>
+            <li><a class="white-text" href="#!">Link 4</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-copyright">
+      <div class="container">
+      Made by <a class="green-text text-lighten-3" href="http://materializecss.com">CmpE 283: Team 01</a>
+      </div>
+    </div>
+  </footer>
+
+
+  
+  <script>
+  function login()
+  {
+    var username= $('#userName').val();
+    var password= $('#password').val();
+    console.log(username + " : " + password);
+    if (username == ''|| password == '') {
+      console.log("error")
+      $('#error').text("error");
+      return;
+    }else{
+      $.post("/login",{ username:username,password:password}).done(function(data){        
+        if(!data.type){
+          return;
+        }
+        else{
+           console.log("login successfull");
+           window.location.href ="/home";
+           // var url = '/home';
+           //  var form = $('<form action="' + url + '" method="post">' +
+           //    '<input type="text" name="api_url" value="' +url + '" />' +
+           //    '</form>');
+           //  $('body').append(form);
+           //  form.submit();
+         }
+      });
+    }
+  }
+
+  function signup(){
+    var form = document.getElementById("signupForm");
+    var inputElements = $('#signupForm input');
+    //creating a object of form Data
+    var signupData = new Object();
+
+    for(var i=0; i< inputElements.length; i++){
+      var inputId = '\"#'+ inputElements[i].id + '\"';      
+      if(inputElements[i].value == ""){
+        //console.log( inputElements[i].id + " : " + $('\'#'+ inputElements[i].id + '\'').val());
+        console.log("Please fill all the input fields.");
+        $('#error').text("Please fill all the input fields.");
+        return;
+      }
+      signupData[inputElements[i].id] = inputElements[i].value;
+    }
+    console.log(signupData);
+     $.post("signup", signupData).done(function(data){
+        if(!data.type){
+          return;
+        }
+        else{
+           console.log("login successfull");
+           window.location.href ="/home";
+         }
+     });
+  }
+  </script>
+
+  </body>
+</html>

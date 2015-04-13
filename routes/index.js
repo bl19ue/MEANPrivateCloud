@@ -14,7 +14,14 @@ var InstanceSchema = mongoose.model('Instance');
 
 /* GET home page. */
 router.get('/', function(req, res) {
-	res.render('index', { title: 'Welcome to Private Cloud'});
+	//res.render('index', { title: 'Welcome to Private Cloud'});
+	res.render('login', { title: 'Welcome to Private Cloud'});
+
+});
+
+router.get('/home', function(req, res) {
+	//res.render('index', { title: 'Welcome to Private Cloud'});
+	res.render('home', { title: 'Welcome to Private Cloud'});
 
 });
 
@@ -26,13 +33,13 @@ var performReqObject = {
 		console.log('in perform request');
 		if(method == 'get'){
 			console.log('Get request with path=' + path);
-			rest.get('http://localhost:8080'+ path, {timeout: 9000000}).on('complete', function(data){
+			rest.get('http://10.189.173.130:8080'+ path, {timeout: 9000000}).on('complete', function(data){
 				deferred.resolve(data);
 			});
 		}
 		else{
 			console.log('Post request with path=' + path);
-			rest.postJson('http://localhost:8080'+ path, d, {timeout: 9000000}).on('complete', function(data){
+			rest.postJson('http://10.189.173.130:8080'+ path, d, {timeout: 9000000}).on('complete', function(data){
 				deferred.resolve(data);
 			});	
 		}
@@ -75,6 +82,8 @@ router.post('/login',function(req,res){
 		} 
 		else {
 			if (user) {
+				req.session.user=user;
+				console.log("Login success with user =" + req.session.user.username);
 				res.json({
 					type: true,
 					data: user,
@@ -94,7 +103,7 @@ router.post('/login',function(req,res){
 //This api adds a new user in User collection
 router.post('/signup', function(req, res, next) {
 
-	UserSchema.findOne({username: req.body.username, password: req.body.password}, function(err, user) {
+	UserSchema.findOne({username: req.body.userName, password: req.body.password}, function(err, user) {
 		if (err) {
 			console.log('err');
 			res.json({
@@ -111,38 +120,40 @@ router.post('/signup', function(req, res, next) {
 			} else {
 				console.log('new');
 				var userModel = new UserSchema();
-
-				userModel.username = req.body.username;
+				console.log("data: " + req.body.userName);
+				userModel.username = req.body.userName;
 				userModel.password = req.body.password;
-				userModel.firstname = req.body.firstname;
-				userModel.lastname = req.body.lastname;
-
+				userModel.firstname = req.body.firstName;
+				userModel.lastname = req.body.lastName;
+				userModel.instances = [];
 				userModel.save(function(err, user) {
-					console.log('saving user');
-					user.token = jwt.sign(user, 'team01');
-					console.log('token = ' + user.token );
-					user.save(function(err, user1) {
-						console.log('saving user with token' + user1);
 						res.json({
 							type: true,
-							data: user1,
-							token: user1.token
+							data: user
 						});
-					});
 				})
 			}
 		}
 	});
-
-
 });
 
+router.post('/signout', function(req, res){
+	try{
+		console.log("signout api called Node.");
+		req.session = null;
+		res.json({
+			type: true,
+			data: "Sign Out successfull"
+		});
+		
+	}catch(e){
+		console.log("Entering catch block: " + e);
+	}
+});
 //This api gives list of all VMs of user- 'username'
-router.get('/user/:username/vm/list', function(req, res){
-
-	var username = req.params.username;
-	console.log('username in list: ' + username);
-	UserSchema.findOne({'username': username}, function(err, user){
+router.get('/vm/list', function(req, res){
+	console.log('user in find of list: ' + req.session.user.username);
+	UserSchema.findOne({'username': req.session.user.username}, function(err, user){
 		console.log('user in find of list: ' + user);
 		if(err){
 			res.json({
@@ -168,7 +179,7 @@ router.get('/user/:username/vm/list', function(req, res){
 			}
 			else{
 				if(instances){
-					console.log('instance name: ' + instances[0].name);
+					//console.log('instance name: ' + instances[0].name);
 					res.json({
 						type: true,
 						data: instances
@@ -186,14 +197,22 @@ router.get('/user/:username/vm/list', function(req, res){
 });
 
 //This api creates a VM for user- 'username'
-router.post('/user/:username/vm/:vmname/create', function(req, res, next){
-	console.log('username and vmname:' + req.params.username + " " + req.params.vmname);
+router.post('/vm/:vmname/create', function(req, res, next){
+	console.log('username and vmname:' + req.session.user.username + " " + req.params.vmname);
 	console.log('post body:' + req.body.vmName);
 
 	var vmObject = {'vmName' : req.body.vmName};
 	var myRequest = performReqObject.performReq('/vm/'+ req.params.vmname+ '/create', 'post', vmObject);
 
 	myRequest.done(function(data){
+		if(data==null || data=='Error'){
+			res.json({
+					type:false,
+					data: "Could not save instance [in create] into db: " + err
+			
+			});
+		}
+
 		console.log(data);
 		var instanceModel = new InstanceSchema(data);
 		instanceModel.save(function(err, instance){
@@ -205,7 +224,7 @@ router.post('/user/:username/vm/:vmname/create', function(req, res, next){
 			}
 			else{
 				if(instance){
-					UserSchema.findOne({username: req.params.username}, function(err, user){
+					UserSchema.findOne({username: req.session.user.username}, function(err, user){
 						if(err){
 							res.json({
 								type:false,
@@ -254,8 +273,9 @@ router.post('/user/:username/vm/:vmname/create', function(req, res, next){
 });
 
 //This api starts vm with vmId - id of user- 'username'
-router.get('/user/:username/vm/:vmname/start', function(req, res){
-	UserSchema.findOne({username: req.params.username, instances: req.params.vmname}, function(err, user){
+router.get('/vm/:vmname/start', function(req, res){
+
+	UserSchema.findOne({username: req.session.user.username, instances: req.params.vmname}, function(err, user){
 		if(err){
 			res.json({
 				type:false,
@@ -306,8 +326,9 @@ router.get('/user/:username/vm/:vmname/start', function(req, res){
 });
 
 //This api stops vm with vmId - id of user- 'username'
-router.get('/user/:username/vm/:vmname/stop', function(req, res){
-	UserSchema.findOne({username: req.params.username, instances: req.params.vmname}, function(err, user){
+router.get('/vm/:vmname/stop', function(req, res){
+	console.log("Stopping :" + req.params.vmname);
+	UserSchema.findOne({username: req.session.user.username, instances: req.params.vmname}, function(err, user){
 		if(err){
 			res.json({
 				type:false,
@@ -357,7 +378,7 @@ router.get('/user/:username/vm/:vmname/stop', function(req, res){
 });
 
 //This api gives stats of vm with vmId - id of user- 'username'
-router.get('/user/:username/vm/:id/stats', ensureAuthorized, function(req,res){
+router.get('/vm/:id/stats', ensureAuthorized, function(req,res){
 
 	//	authenticateToken(req,res);
 
@@ -392,8 +413,8 @@ router.get('/user/:username/vm/:id/stats', ensureAuthorized, function(req,res){
 	//request.end();
 });
 
-router.get('/user/:username/vm/:vmname/status', function(req, res){
-	UserSchema.findOne({username: req.params.username}, function(err, user){
+router.get('/vm/:vmname/status', function(req, res){
+	UserSchema.findOne({username: req.session.user.username}, function(err, user){
 		if(err){
 			res.json({
 				type:false,
@@ -435,6 +456,16 @@ router.get('/user/:username/vm/:vmname/status', function(req, res){
 		}
 	});
 
+});
+
+router.get("/vm/:vmname/statistics", function(req,res){
+	var myRequest = performReqObject.performReq('/vm/'+ req.params.vmname+ '/statistics', 'get', null);
+	myRequest.done(function(data){
+		res.json({
+			type:true,
+			data: data
+		});		
+	});
 });
 
 module.exports = router;

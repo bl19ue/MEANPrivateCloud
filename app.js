@@ -4,8 +4,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
 var mongoose = require('mongoose');
+var session = require('cookie-session');
 
 mongoose.connect('mongodb://sumit:sumit@proximus.modulusmongo.net:27017/V2ohusyb');
 
@@ -34,7 +34,18 @@ app.use(function(req, res, next) {
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type, Authorization');
     next();
 });
+
 app.use(cookieParser());
+app.use(session({
+    keys: ['key1','key2']
+}));
+// app.use(express.session({resave: false,
+//       saveUninitialized: true,secret:'adfasdf34etydfs34sefsdf'}));
+app.use(function(req, res, next) {
+    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);

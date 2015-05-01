@@ -7,7 +7,7 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var session = require('cookie-session');
 
-mongoose.connect('mongodb://sumit:sumit@proximus.modulusmongo.net:27017/V2ohusyb');
+mongoose.connect('mongodb://:@proximus.modulusmongo.net:27017/V2ohusyb');
 
 require('./models/User');
 require('./models/Instance');

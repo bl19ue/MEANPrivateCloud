@@ -7,7 +7,10 @@ var InstanceSchema = new mongoose.Schema({
 	ram: {type: Number},
 	status: String,
 	ipaddress: String,
-	created_at: String
+	created_at: String,
+	alarmCpu: {value:Number, flag:Boolean},
+	alarmMemory: {value:Number, flag:Boolean},
+	alarmDisk: {value:Number, flag:Boolean}
 });
 
 mongoose.model('Instance', InstanceSchema, 'Instance');

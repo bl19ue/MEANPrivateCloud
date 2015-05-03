@@ -20,9 +20,6 @@
     <!-- HighCharts Library -->
     <script src="http://code.highcharts.com/highcharts.js"></script>
     <script src="http://code.highcharts.com/modules/exporting.js"></script>
-
-
-
 </head>
 
 <body>
@@ -185,7 +182,7 @@
                     <div id="dashboard" class="col s12">
                         <div class="col s12">
                             <!-- Modal Structure -->
-                            <div id="vmDetails" class="modal modal-fixed-footer" style="width:80%; height:100%">
+                            <div id="vmDetails" class="modal " style="width:80%; height:100%">
                                 <div class="modal-content">
                                     <div class="row">
                                         <div class="col s12">
@@ -198,132 +195,140 @@
                                         </div>
                                     </div>
                                     <div class="row">
-                                    <div id="details" class="col s12">
-                                        <div class="input-field col s12 center">
-                                            <h3 class="card-title" id="vmDetailsHeading"></h3>
+                                        <div id="details" class="col s12">
+                                            <div class="input-field col s12 center">
+                                                <h3 class="card-title" id="vmDetailsHeading"></h3>
+                                            </div>
+                                            <div class="divider"></div>
+                                            <div class="row">
+                                                <div class="col s12 l6 offset-l3 m8 offset-m2">
+                                                    <div class="input-field col s12">
+                                                        <span class="col s4">OS</span><span id="vmDetailsType" class="col s8"></span>
+                                                    </div>
+                                                    <div class="input-field col s12">
+                                                        <span class="col s4">CPU</span><span id="vmDetailsCPU" class="col s8"></span>
+                                                    </div>
+                                                    <div class="input-field col s12">
+                                                        <span class="col s4">Memory</span><span id="vmDetailsRam" class="col s8"></span>
+                                                    </div>
+                                                    <div class="input-field col s12">
+                                                        <span class="col s4">Status</span><span id="vmDetailsStatus" class="col s8"></span>
+                                                    </div>
+                                                    <div class="input-field col s12">
+                                                        <span class="col s4">IP Address</span><span id="vmDetailsIpAddress" class="col s8"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col s12 center-align">
+                                                    <a class="waves-effect waves-green btn" onclick="startStopVM();">Start/Stop</a>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="divider"></div>
-                                        <div class="col s12">
-                                            <div class="input-field col s12">
-                                                <span class="col s4">OS</span><span id="vmDetailsType" class="col s8"></span>
+                                        <div id="graph" class="col s12">
+                                            <div class="col s4">
+                                                <div id="vmStatsChart" style="margin: 0 auto"></div>
                                             </div>
-                                            <div class="input-field col s12">
-                                                <span class="col s4">CPU</span><span id="vmDetailsCPU" class="col s8"></span>
+                                            <div class="col s4">
+                                                <div id="vmStatsChart" style="margin: 0 auto"></div>
                                             </div>
-                                            <div class="input-field col s12">
-                                                <span class="col s4">Memory</span><span id="vmDetailsRam" class="col s8"></span>
-                                            </div>
-                                            <div class="input-field col s12">
-                                                <span class="col s4">Status</span><span id="vmDetailsStatus" class="col s8"></span>
-                                            </div>
-                                            <div class="input-field col s12">
-                                                <span class="col s4">IP Address</span><span id="vmDetailsIpAddress" class="col s8"></span>
+                                            <div class="col s4">
+                                                <div id="vmStatsChart" style="margin: 0 auto"></div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div id="graph" class="col s12">
-                                        <div class="col s4">
-                                            <div id="vmStatsChart" style="margin: 0 auto"></div>
-                                        </div>
-                                        <div class="col s4">
-                                            <div id="vmStatsChart" style="margin: 0 auto"></div>
-                                        </div>
-                                        <div class="col s4">
-                                            <div id="vmStatsChart" style="margin: 0 auto"></div>
-                                        </div>
-                                    </div>
-                                    <div id="alarm" class="col s12">
-                                        <div class="row">
-                                            <div class="input-field col s3 right-align">
-                                                <span>CPU Utilization</span>
-                                            </div>
-                                            <div class="input-field col s3">
-                                            <select class="browser-default">
+                                        <div id="alarm" class="col s12">
+                                            <div class="row">
+                                                <div class="input-field col s3 right-align">
+                                                    <span>CPU Utilization</span>
+                                                </div>
+                                                <div class="input-field col s3">
+                                                    <span>greater than</span>
+                                                    <!-- <select id="alarm-CpuUtilizationCond" class="browser-default">
                                               <option value="" disabled selected>Choose your option</option>
                                               <option value="gt">Greater</option>
                                               <option value="lt">Less</option>
                                               <option value="eq">Equal</option>
-                                            </select>
-                                          </div>
-                                          <div class="input-field col s3">
-                                            <input value="" id="alarm-CpuUtilization" type="number" class="validate" placeholder="1-100" max="100" min="1">
+                                            </select> -->
+                                                </div>
+                                                <div class="input-field col s3">
+                                                    <input value="" id="alarm-CpuUtilizationValue" type="number" class="validate" placeholder="1-100" max="100" min="0">
+                                                </div>
+                                                <div class="input-field col s3">
+                                                    <div class="switch">
+                                                        <label>
+                                                            Off
+                                                            <input type="checkbox" id="alarm-CpuUtilizationStatus">
+                                                            <span class="lever"></span> On
+                                                        </label>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="input-field col s3">
-                                            <div class="switch">
-                                                <label>
-                                                  Off
-                                                  <input type="checkbox">
-                                                  <span class="lever"></span>
-                                                  On
-                                                </label>
-                                              </div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="input-field col s3 right-align">
-                                                <span>Memory Utilization</span>
-                                            </div>
-                                            <div class="input-field col s3">
-                                            <select class="browser-default">
+                                            <div class="row">
+                                                <div class="input-field col s3 right-align">
+                                                    <span>Memory Utilization</span>
+                                                </div>
+                                                <div class="input-field col s3">
+                                                    <span>greater than</span>
+                                                    <!-- <select id="alarm-MemoryUtilizationCond"  class="browser-default">
                                               <option value="" disabled selected>Choose your option</option>
                                               <option value="gt">Greater</option>
                                               <option value="lt">Less</option>
                                               <option value="eq">Equal</option>
-                                            </select>
-                                          </div>
-                                          <div class="input-field col s3">
-                                            <input value="" id="alarm-CpuUtilization" type="number" class="validate" placeholder="1-100" max="100" min="1">
+                                            </select> -->
+                                                </div>
+                                                <div class="input-field col s3">
+                                                    <input value="" id="alarm-MemoryUtilizationValue" type="number" class="validate" placeholder="1-100" max="100" min="0">
+                                                </div>
+                                                <div class="input-field col s3">
+                                                    <div class="switch">
+                                                        <label>
+                                                            Off
+                                                            <input type="checkbox" id="alarm-MemoryUtilizationStatus">
+                                                            <span class="lever"></span> On
+                                                        </label>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="input-field col s3">
-                                            <div class="switch">
-                                                <label>
-                                                  Off
-                                                  <input type="checkbox">
-                                                  <span class="lever"></span>
-                                                  On
-                                                </label>
-                                              </div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="input-field col s3 right-align">
-                                                <span>Disk Utilization</span>
-                                            </div>
-                                            <div class="input-field col s3">
-                                            <select class="browser-default">
+                                            <div class="row">
+                                                <div class="input-field col s3 right-align">
+                                                    <span>Disk Utilization</span>
+                                                </div>
+                                                <div class="input-field col s3">
+                                                    <span>greater than</span>
+                                                    <!-- <select id="alarm-DiskUtilizationCond" class="browser-default">
                                               <option value="" disabled selected>Choose your option</option>
                                               <option value="gt">Greater</option>
                                               <option value="lt">Less</option>
                                               <option value="eq">Equal</option>
-                                            </select>
-                                          </div>
-                                          <div class="input-field col s3">
-                                            <input value="" id="alarm-CpuUtilization" type="number" class="validate" placeholder="1-100" max="100" min="1">
+                                            </select> -->
+                                                </div>
+                                                <div class="input-field col s3">
+                                                    <input value="" id="alarm-DiskUtilizationValue" type="number" class="validate" placeholder="1-100" max="100" min="0">
+                                                </div>
+                                                <div class="input-field col s3">
+                                                    <div class="switch">
+                                                        <label>
+                                                            Off
+                                                            <input type="checkbox" id="alarm-DiskUtilizationStatus">
+                                                            <span class="lever"></span> On
+                                                        </label>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="input-field col s3">
-                                            <div class="switch">
-                                                <label>
-                                                  Off
-                                                  <input type="checkbox">
-                                                  <span class="lever"></span>
-                                                  On
-                                                </label>
-                                              </div>
+                                            <div class="row">
+                                                <div class="col s12 center-align">
+                                                    <a class="waves-effect waves-green btn" id="updateAlarm">Update Alarm</a>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="row"></div>
-
-                                        
-                                    </div>
                                     </div>
                                 </div>
-                            <div class="modal-footer center">
-                                <a class="modal-action modal-close waves-effect waves-green btn-flat" onclick="startStopVM();">Start/Stop</a>
-                                <a href="#" class="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+                                <div class="modal-footer center">
+                                    <a href="#" class="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+                                </div>
                             </div>
                         </div>
-</div>
-                            
+
                         <table class="hoverable" id="vmList">
                             <thead>
                                 <tr>
@@ -434,7 +439,7 @@
 
         function openVmDetails(vmName) {
             console.log("openVmDetails(" + vmName + ")");
-            var instances = JSON.parse(sessionStorage.getItem("instances"));
+            // var instances = JSON.parse(sessionStorage.getItem("instances"));
             console.log('/vm/' + vmName + '/statistics');
             $.ajax({
                 url: '/vm/' + vmName + '/statistics',
@@ -448,18 +453,51 @@
                     visitorData(res.data);
                 }
             });
-            instances.forEach(function(thisinstance) {
-                if (thisinstance.name == vmName) {
-                    console.log(thisinstance);
+            // instances.forEach(function(thisinstance) {
+            //     if (thisinstance.name == vmName) {
+            //         console.log(thisinstance);
+            //         $('#vmDetailsHeading').text(thisinstance.name);
+            //         $('#vmDetailsType').text(thisinstance.type);
+            //         $('#vmDetailsRam').text(thisinstance.ram);
+            //         $('#vmDetailsCPU').text(thisinstance.cpu);
+            //         $('#vmDetailsStatus').text(thisinstance.status);
+            //     } else {
+            //         return;
+            //     }
+            // });
+
+            getVmStats(vmName);
+
+        }
+
+        function getVmStats(vmName) {
+            console.log("getting vm stats");
+            url = "/vm/" + vmName + "/vmStats";
+            $.get(url, function(res) {
+                console.log(res.data);
+                if (!res.type) {
+                    return;
+                } else {
+                    thisinstance = res.data;
                     $('#vmDetailsHeading').text(thisinstance.name);
                     $('#vmDetailsType').text(thisinstance.type);
                     $('#vmDetailsRam').text(thisinstance.ram);
                     $('#vmDetailsCPU').text(thisinstance.cpu);
                     $('#vmDetailsStatus').text(thisinstance.status);
-                } else {
-                    return;
+                    $('#vmDetailsIpAddress').text(thisinstance.ipaddress);
+                    $('#alarm-CpuUtilizationValue').val(res.data.alarmCpu.value);
+                    $('#alarm-CpuUtilizationStatus').prop("checked", res.data.alarmCpu.flag);
+                    $('#alarm-MemoryUtilizationValue').val(res.data.alarmMemory.value);
+                    $('#alarm-MemoryUtilizationStatus').prop("checked", res.data.alarmMemory.flag);
+                    $('#alarm-DiskUtilizationValue').val(res.data.alarmDisk.value);
+                    $('#alarm-DiskUtilizationStatus').prop("checked", res.data.alarmDisk.flag);
+                    getGraphs(vmName);
                 }
             });
+        }
+
+        function getGraphs(vmName) {
+            console.log("getting vm graphs");
             $('#vmDetails').openModal();
         }
 
@@ -539,10 +577,42 @@
             }
         }
 
+        $('#updateAlarm').click(function() {
+            console.log("Updating Alarm");
+            vmName = $('#vmDetailsHeading').html();
+
+            alarmCpuValue = $('#alarm-CpuUtilizationValue').val();
+            alarmCpuFlag = $('#alarm-CpuUtilizationStatus').prop("checked");
+            alarmMemoryValue = $('#alarm-MemoryUtilizationValue').val();
+            alarmMemoryFlag = $('#alarm-MemoryUtilizationStatus').prop("checked");
+            alarmDiskValue = $('#alarm-DiskUtilizationValue').val();
+            alarmDiskFlag = $('#alarm-DiskUtilizationStatus').prop("checked");
+            req = {
+                alarmCpuValue: alarmCpuValue,
+                alarmCpuFlag: alarmCpuFlag,
+                alarmMemoryValue: alarmMemoryValue,
+                alarmMemoryFlag: alarmMemoryFlag,
+                alarmDiskValue: alarmDiskValue,
+                alarmDiskFlag: alarmDiskFlag
+            };
+
+            url = "/vm/" + vmName + "/alarm/update";
+            $.post(url, req, function(res) {
+                console.log(res);
+                if (!res.type) {
+                    //console.log(res);
+                    alert(res.data);
+                } else {
+                    alert("Alarm Updated");
+                    $('#vmDetails').closeModal();
+                }
+            });
+        });
+
         function visitorData(data) {
-            console.log(data[0]);
-            console.log(data[1]);
-            console.log(data[2]);
+            // console.log(data[0]);
+            // console.log(data[1]);
+            // console.log(data[2]);
             //console.log(data[3]);
 
             $('#vmStatsChart').highcharts({
@@ -572,4 +642,5 @@
     </script>
 
 </body>
+
 </html>

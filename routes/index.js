@@ -170,7 +170,7 @@ router.get('/vm/list', function(req, res) {
     UserSchema.findOne({
         'username': req.session.user.username
     }, function(err, user) {
-        console.log('user in find of list: ' + user);
+        //console.log('user in find of list: ' + user);
         if (err) {
             res.json({
                 type: false,
@@ -218,21 +218,24 @@ router.get('/vm/list', function(req, res) {
 router.post('/vm/:vmname/create', function(req, res, next) {
     console.log('username and vmname:' + req.session.user.username + " " + req.params.vmname);
     console.log('post body:' + req.body.vmName);
+
+    //checking if instance with vmName is already present
     InstanceSchema.findOne({
         name: req.body.vmName
      }, function(err, instance) {
         if (instance) {
+        	//if Instance found
         	console.log("Instance name conflict");
             res.json({
                 type: false,
                 data: "Instance name conflict"
             });
         } else {
+        	//if Instance not found	
             var vmObject = {
                 'vmName': req.body.vmName
             };
             var myRequest = performReqObject.performReq('/vm/' + req.params.vmname + '/create', 'post', vmObject);
-
             myRequest.done(function(data) {
                 console.log(JSON.stringify(data));
                 if (data.type=="false" || data == null || data == 'Error' || data === undefined) {
@@ -243,6 +246,12 @@ router.post('/vm/:vmname/create', function(req, res, next) {
                     });
                 } else {
                     var instanceModel = new InstanceSchema(data);
+                    instanceModel.alarmCpu.value = 0;
+                    instanceModel.alarmMemory.value = 0;
+                    instanceModel.alarmDisk.value = 0;
+                    instanceModel.alarmCpu.flag = false;
+                    instanceModel.alarmMemory.flag = false;
+                    instanceModel.alarmDisk.flag = false;
                     instanceModel.save(function(err, instance) {
                         if (err) {
                             res.json({
@@ -482,6 +491,100 @@ router.get("/vm/:vmname/statistics", function(req, res) {
             data: data
         });
     });
+});
+
+router.get("/vm/:vmname/vmStats", function(req, res) {
+	console.log("Getting vmStats")
+	InstanceSchema.findOne({name: req.params.vmname}, function(err, instance) {
+		//console.log(instance);
+		if(err){
+			console.log("Error searching VM: " + err);
+		 res.json({
+                type: false,
+                data: "Error searching VM: " + err
+            });
+		}else{
+			if(instance){
+				console.log("Sending instance: " + instance);
+				res.json({
+                    type: true,
+                    data: instance
+                });
+			}else{
+				console.log("No instance found with name: " + req.params.vmname);
+				res.json({
+					type: false,
+                    data: "No instance found with name: " + req.params.vmname
+                });
+			}
+		}
+	});
+});
+
+router.post("/vm/:vmname/alarm/update", function(req, res) {
+	console.log("Updating Alarm for " +  req.params.vmname);
+
+	UserSchema.findOne({
+        username: req.session.user.username,
+        instances: req.params.vmname
+    }, function(err, user) {
+        if (err) {
+            res.json({
+                type: false,
+                data: "Error occured: " + err
+            });
+        } else {
+            if (user) {
+            	console.log("User found");
+                InstanceSchema.findOne({name: req.params.vmname}, function(err, instance) {
+                	if(err){
+                		res.json({
+                            type: false,
+                            data: "No instance found [in start] with name: " + req.params.vmname
+                        });
+                	}else{
+                		if (instance) {
+	                	console.log("Instance found... Updating");
+	                	instance.alarmCpu.value = req.body.alarmCpuValue;
+	                    instance.alarmMemory.value = req.body.alarmMemoryValue;
+	                    instance.alarmDisk.value = req.body.alarmDiskValue;
+	                    instance.alarmCpu.flag = req.body.alarmCpuFlag;
+	                    instance.alarmMemory.flag = req.body.alarmMemoryFlag;
+	                    instance.alarmDisk.flag = req.body.alarmDiskFlag;
+	                    instance.save(function(err, instance) {
+	                        if (err) {
+	                            res.json({
+	                                type: false,
+	                                data: "Could not save instance [in start] into db: " + err
+	                            });
+	                        } else {
+	                            if (instance) {
+	                            	console.log("Instance Updated");
+	                                res.json({
+	                                    type: true,
+	                                    data: instance
+	                                });
+	                            } else {
+	                                res.json({
+	                                    type: false,
+	                                    data: "Could not update instance with name: " + req.params.vmname
+	                                });
+	                            }
+	                        }
+	                    });
+	                	}
+	                }
+                });
+            } else {
+                res.json({
+                    type: false,
+                    data: "User not found [in start]"
+                });
+            }
+        }
+    });
+
+
 });
 
 module.exports = router;

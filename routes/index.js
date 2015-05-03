@@ -56,6 +56,34 @@ var performReqObject = {
     }
 }
 
+var reqElasticSearch = {
+	performReq: function(path, method, d) {
+		console.log('path=' + path);
+		var deferred = q.defer();
+
+		console.log('in elastic request');
+		if (method == 'get') {
+			console.log('Get request with path=' + path);
+			rest.get('http://localhost:8080' + path, {
+				timeout: 9000000
+			}).on('complete', function(data) {
+				deferred.resolve(data);
+			});
+		} 
+		
+		else {
+			console.log('Post request to elastic search with path=' + path + "and d = " + d);
+			rest.postJson(path, d, {
+				timeout: 5000
+			}).on('complete', function(data) {
+				deferred.resolve(data);
+			});
+		}
+
+		return deferred.promise;
+
+	}
+}
 
 //This method ensures authentication for secured api's
 function ensureAuthorized(req, res, next) {
@@ -483,5 +511,85 @@ router.get("/vm/:vmname/statistics", function(req, res) {
         });
     });
 });
+
+/*********************************************ALARM START******************************************/
+
+router.post('/vm', function(req, res){
+	console.log('/vm');
+	var ip = req.body.ip;
+	console.log(req.body);
+	generateStats(ip).then(function(stats){
+		console.log("statsss=" + stats);
+		res.json({
+			type: true,
+			data: stats
+		});
+	}).fail(function(err){
+		res.json({
+			type: false,
+			data: err
+		});
+	});
+	
+});
+
+var generateStats = function(ip){
+	//TODO get details of the VM
+	
+	var url = 'http://localhost:9200//project2/vm/_search';
+	
+	var data = {
+		"query": {
+			"filtered": {
+				"query": {
+					"query_string": {
+						"query": ip
+					}
+				}
+			}
+		}
+	}
+	console.log("ip=" + ip);
+	
+	var stats = {
+		time: [],
+		mem: [],
+		cpu: [],
+		net: [],
+		disk: []
+	};
+	
+	var deferred = q.defer();
+	
+	reqElasticSearch.performReq('http://localhost:9200//project2/vm/_search', 'post', data).then(function(statsRow){
+		
+//		for(var i=0;i<statsRow.hits.hits.length;i++){
+//			console.log(statsRow.hits.hits[i]._source.date);
+//			stats.time.push(statsRow.hits.hits[i]._source.date);
+//			stats.mem.push(statsRow.hits.hits[i]._source.mem);
+//			stats.cpu.push(statsRow.hits.hits[i]._source.cpu);
+//			stats.net.push(statsRow.hits.hits[i]._source.net);
+//			stats.disk.push(statsRow.hits.hits[i]._source.disk);
+//			//console.log("sd" + stats.time);
+//		}
+		
+		statsRow.hits.hits.forEach(function(row){
+			console.log(row._source.date);
+			stats.time.push(row._source.date);
+			stats.mem.push(row._source.mem);
+			stats.cpu.push(row._source.cpu);
+			stats.net.push(row._source.net);
+			stats.disk.push(row._source.disk);
+			console.log("sd" + stats.time);
+		});
+		
+		deferred.resolve(stats);
+		
+	});
+	
+	return deferred.promise;
+}
+
+/*********************************************ALARM END******************************************/
 
 module.exports = router;

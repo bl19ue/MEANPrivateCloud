@@ -56,30 +56,28 @@ var performReqObject = {
     }
 }
 
-var reqElasticSearch = {		
-	performReq: function(path, method, d) {		
-		console.log('path=' + path);		
-		var deferred = q.defer();		
-		console.log('in elastic request');		
-		if (method == 'get') {		
-			console.log('Get request with path=' + path);		
-			rest.get('http://localhost:8080' + path, {		
-				timeout: 9000000		
-			}).on('complete', function(data) {		
-				deferred.resolve(data);		
-			});		
-		} 		
-				
-		else {		
-			console.log('Post request to elastic search with path=' + path + "and d = " + d);		
-			rest.postJson(path, d, {		
-				timeout: 5000		
-			}).on('complete', function(data) {		
-				deferred.resolve(data);		
-			});		
-		}		
-		return deferred.promise;		
-	}		
+var reqElasticSearch = {
+    performReq: function(path, method, d) {
+        console.log('path=' + path);
+        var deferred = q.defer();
+        console.log('in elastic request');
+        if (method == 'get') {
+            console.log('Get request with path=' + path);
+            rest.get('http://localhost:8080' + path, {
+                timeout: 9000000
+            }).on('complete', function(data) {
+                deferred.resolve(data);
+            });
+        } else {
+            console.log('Post request to elastic search with path=' + path + "and d = " + d);
+            rest.postJson(path, d, {
+                timeout: 5000
+            }).on('complete', function(data) {
+                deferred.resolve(data);
+            });
+        }
+        return deferred.promise;
+    }
 }
 
 //This method ensures authentication for secured api's
@@ -247,24 +245,24 @@ router.post('/vm/:vmname/create', function(req, res, next) {
     //checking if instance with vmName is already present
     InstanceSchema.findOne({
         name: req.body.vmName
-     }, function(err, instance) {
+    }, function(err, instance) {
         if (instance) {
-        	//if Instance found
-        	console.log("Instance name conflict");
+            //if Instance found
+            console.log("Instance name conflict");
             res.json({
                 type: false,
                 data: "Instance name conflict"
             });
         } else {
-        	//if Instance not found	
+            //if Instance not found	
             var vmObject = {
                 'vmName': req.body.vmName
             };
             var myRequest = performReqObject.performReq('/vm/' + req.params.vmname + '/create', 'post', vmObject);
             myRequest.done(function(data) {
                 console.log(JSON.stringify(data));
-                if (data.type=="false" || data == null || data == 'Error' || data === undefined) {
-                	console.log(data.message);
+                if (data.type == "false" || data == null || data == 'Error' || data === undefined) {
+                    console.log(data.message);
                     res.json({
                         type: false,
                         data: data.message
@@ -519,37 +517,39 @@ router.get("/vm/:vmname/statistics", function(req, res) {
 });
 
 router.get("/vm/:vmname/vmStats", function(req, res) {
-	console.log("Getting vmStats")
-	InstanceSchema.findOne({name: req.params.vmname}, function(err, instance) {
-		//console.log(instance);
-		if(err){
-			console.log("Error searching VM: " + err);
-		 res.json({
+    console.log("Getting vmStats")
+    InstanceSchema.findOne({
+        name: req.params.vmname
+    }, function(err, instance) {
+        //console.log(instance);
+        if (err) {
+            console.log("Error searching VM: " + err);
+            res.json({
                 type: false,
                 data: "Error searching VM: " + err
             });
-		}else{
-			if(instance){
-				console.log("Sending instance: " + instance);
-				res.json({
+        } else {
+            if (instance) {
+                console.log("Sending instance: " + instance);
+                res.json({
                     type: true,
                     data: instance
                 });
-			}else{
-				console.log("No instance found with name: " + req.params.vmname);
-				res.json({
-					type: false,
+            } else {
+                console.log("No instance found with name: " + req.params.vmname);
+                res.json({
+                    type: false,
                     data: "No instance found with name: " + req.params.vmname
                 });
-			}
-		}
-	});
+            }
+        }
+    });
 });
 
 router.post("/vm/:vmname/alarm/update", function(req, res) {
-	console.log("Updating Alarm for " +  req.params.vmname);
+    console.log("Updating Alarm for " + req.params.vmname);
 
-	UserSchema.findOne({
+    UserSchema.findOne({
         username: req.session.user.username,
         instances: req.params.vmname
     }, function(err, user) {
@@ -560,45 +560,47 @@ router.post("/vm/:vmname/alarm/update", function(req, res) {
             });
         } else {
             if (user) {
-            	console.log("User found");
-                InstanceSchema.findOne({name: req.params.vmname}, function(err, instance) {
-                	if(err){
-                		res.json({
+                console.log("User found");
+                InstanceSchema.findOne({
+                    name: req.params.vmname
+                }, function(err, instance) {
+                    if (err) {
+                        res.json({
                             type: false,
                             data: "No instance found [in start] with name: " + req.params.vmname
                         });
-                	}else{
-                		if (instance) {
-	                	console.log("Instance found... Updating");
-	                	instance.alarmCpu.value = req.body.alarmCpuValue;
-	                    instance.alarmMemory.value = req.body.alarmMemoryValue;
-	                    instance.alarmDisk.value = req.body.alarmDiskValue;
-	                    instance.alarmCpu.flag = req.body.alarmCpuFlag;
-	                    instance.alarmMemory.flag = req.body.alarmMemoryFlag;
-	                    instance.alarmDisk.flag = req.body.alarmDiskFlag;
-	                    instance.save(function(err, instance) {
-	                        if (err) {
-	                            res.json({
-	                                type: false,
-	                                data: "Could not save instance [in start] into db: " + err
-	                            });
-	                        } else {
-	                            if (instance) {
-	                            	console.log("Instance Updated");
-	                                res.json({
-	                                    type: true,
-	                                    data: instance
-	                                });
-	                            } else {
-	                                res.json({
-	                                    type: false,
-	                                    data: "Could not update instance with name: " + req.params.vmname
-	                                });
-	                            }
-	                        }
-	                    });
-	                	}
-	                }
+                    } else {
+                        if (instance) {
+                            console.log("Instance found... Updating");
+                            instance.alarmCpu.value = req.body.alarmCpuValue;
+                            instance.alarmMemory.value = req.body.alarmMemoryValue;
+                            instance.alarmDisk.value = req.body.alarmDiskValue;
+                            instance.alarmCpu.flag = req.body.alarmCpuFlag;
+                            instance.alarmMemory.flag = req.body.alarmMemoryFlag;
+                            instance.alarmDisk.flag = req.body.alarmDiskFlag;
+                            instance.save(function(err, instance) {
+                                if (err) {
+                                    res.json({
+                                        type: false,
+                                        data: "Could not save instance [in start] into db: " + err
+                                    });
+                                } else {
+                                    if (instance) {
+                                        console.log("Instance Updated");
+                                        res.json({
+                                            type: true,
+                                            data: instance
+                                        });
+                                    } else {
+                                        res.json({
+                                            type: false,
+                                            data: "Could not update instance with name: " + req.params.vmname
+                                        });
+                                    }
+                                }
+                            });
+                        }
+                    }
                 });
             } else {
                 res.json({
@@ -614,80 +616,70 @@ router.post("/vm/:vmname/alarm/update", function(req, res) {
 
 /*********************************************ALARM START******************************************/
 
-router.post('/vm', function(req, res){
-	console.log('/vm');
-	var ip = req.body.ip;
-	console.log(req.body);
-	generateStats(ip).then(function(stats){
-		console.log("statsss=" + stats);
-		res.json({
-			type: true,
-			data: stats
-		});
-	}).fail(function(err){
-		res.json({
-			type: false,
-			data: err
-		});
-	});
-	
+router.post('/vm', function(req, res) {
+    console.log('/vm');
+    var ip = req.body.ip;
+    console.log(req.body);
+    generateStats(ip).then(function(stats) {
+        console.log("statsss=" + stats);
+        res.json({
+            type: true,
+            data: stats
+        });
+    }).fail(function(err) {
+        res.json({
+            type: false,
+            data: err
+        });
+    });
+
 });
 
-var generateStats = function(ip){
-	//TODO get details of the VM
-	
-	var url = 'http://localhost:9200//project2/vm/_search';
-	
-	var data = {
-		"query": {
-			"filtered": {
-				"query": {
-					"query_string": {
-						"query": ip
-					}
-				}
-			}
-		}
-	}
-	console.log("ip=" + ip);
-	
-	var stats = {
-		time: [],
-		mem: [],
-		cpu: [],
-		net: [],
-		disk: []
-	};
-	
-	var deferred = q.defer();
-	
-	reqElasticSearch.performReq('http://localhost:9200//project2/vm/_search', 'post', data).then(function(statsRow){
-		
-//		for(var i=0;i<statsRow.hits.hits.length;i++){
-//			console.log(statsRow.hits.hits[i]._source.date);
-//			stats.time.push(statsRow.hits.hits[i]._source.date);
-//			stats.mem.push(statsRow.hits.hits[i]._source.mem);
-//			stats.cpu.push(statsRow.hits.hits[i]._source.cpu);
-//			stats.net.push(statsRow.hits.hits[i]._source.net);
-//			stats.disk.push(statsRow.hits.hits[i]._source.disk);
-//			//console.log("sd" + stats.time);
-//		}
-		
-		statsRow.hits.hits.forEach(function(row){
-			console.log(row._source.date);
-			stats.time.push(row._source.date);
-			stats.mem.push(row._source.mem);
-			stats.cpu.push(row._source.cpu);
-			stats.net.push(row._source.net);
-			stats.disk.push(row._source.disk);
-			console.log("sd" + stats.time);
-		});
-		
-		deferred.resolve(stats);
-		
-	});
-	
-	return deferred.promise;
+var generateStats = function(ip) {
+    //TODO get details of the VM
+
+    var url = 'http://10.189.175.23:9200//project2/vm/_search';
+
+    var data = {
+        "query": {
+            "filtered": {
+                "query": {
+                    "query_string": {
+                        "query": ip
+                    }
+                }
+            }
+        }
+    }
+    console.log("ip=" + ip);
+
+    var stats = {
+        time: [],
+        mem: [],
+        cpu: [],
+        net: [],
+        disk: []
+    };
+
+    var deferred = q.defer();
+
+    reqElasticSearch.performReq(url, 'post', data).then(function(statsRow) {
+
+        statsRow.hits.hits.forEach(function(row) {
+            console.log(row._source.date);
+            stats.time.push(row._source.date);
+            stats.mem.push(row._source.mem);
+            stats.cpu.push(row._source.cpu);
+            stats.net.push(row._source.net);
+            stats.disk.push(row._source.disk);
+            console.log("sd" + stats.time);
+        });
+
+        deferred.resolve(stats);
+
+    });
+
+    return deferred.promise;
 }
 
 /*********************************************ALARM END******************************************/

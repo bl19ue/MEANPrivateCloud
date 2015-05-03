@@ -6,6 +6,7 @@ var InstanceSchema = new mongoose.Schema({
 	cpu: {type: Number},
 	ram: {type: Number},
 	status: String,
+	ipaddress: String,
 	created_at: String
 });
 

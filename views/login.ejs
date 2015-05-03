@@ -143,6 +143,7 @@
     }else{
       $.post("/login",{ username:username,password:password}).done(function(data){        
         if(!data.type){
+          console.log(data.data);
           return;
         }
         else{

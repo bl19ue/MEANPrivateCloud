@@ -1,6 +1,21 @@
 $(document).ready(function() {
-    $('.modal-trigger').leanModal();
+    
+    //$('#vmDetails').leanModal();
+    //$('#deployVM').leanModal();
+
     getVMList();
+    $('.modal-trigger').leanModal({
+        dismissible: true, // Modal can be dismissed by clicking outside of the modal
+      opacity: .5, // Opacity of modal background
+      in_duration: 300, // Transition in duration
+      out_duration: 200, // Transition out duration
+      ready: function() { 
+            alert('Ready');
+            console.log('Ready');
+            $("#ismodalopen").val("true"); 
+        }, // Callback for Modal open
+      complete: function() { alert("Hello");$("#ismodalopen").val("false");  } // Callback for Modal close
+    });
 });
 
 
@@ -13,27 +28,19 @@ function getVMList() {
 
             res.data.forEach(function(thisdata) {
 
-                var tr = "<tr id=\"" + thisdata.name + "\" onclick=\"openVmDetails(\'" + thisdata.name + "\') \">";
+                var tr = "<tr id=\"" + thisdata.name + "\" + class=\"modal-trigger\" onclick=\"openVmDetails(\'" + thisdata.name + "\') \">";
                 tr += "<td>" + thisdata.name + "</td>";
                 tr += "<td>" + thisdata.type + "</td>";
                 tr += "<td>" + thisdata.ipaddress + "</td>";
                 tr += "<td>" + thisdata.status + "</td>";
                 tr += "</tr>";
                 $("#vmList tbody").append(tr);
-
-                // var tab = document.getElementById("vmList");
-                // var row = tab.insertRow();
-
-                // var cell1 = row.insertCell(0);
-                // var cell2 = row.insertCell(1);
-                // var cell3 = row.insertCell(2);
-                // cell1.innerHTML = thisdata.name;
-                // cell2.innerHTML = thisdata.type;
-                // cell3.innerHTML = thisdata.status;
             });
             sessionStorage.removeItem("instances");
             sessionStorage.setItem("instances", JSON.stringify(res.data));
         }
+
+
     });
 }
 
@@ -50,9 +57,8 @@ function signOut() {
     });
 }
 
-function openVmDetails(vmName) {
-    console.log("openVmDetails(" + vmName + ")");
-    // var instances = JSON.parse(sessionStorage.getItem("instances"));
+
+function getVmStatistics(vmName){
     console.log('/vm/' + vmName + '/statistics');
     $.ajax({
         url: '/vm/' + vmName + '/statistics',
@@ -66,19 +72,11 @@ function openVmDetails(vmName) {
             visitorData(res.data);
         }
     });
-    // instances.forEach(function(thisinstance) {
-    //     if (thisinstance.name == vmName) {
-    //         console.log(thisinstance);
-    //         $('#vmDetailsHeading').text(thisinstance.name);
-    //         $('#vmDetailsType').text(thisinstance.type);
-    //         $('#vmDetailsRam').text(thisinstance.ram);
-    //         $('#vmDetailsCPU').text(thisinstance.cpu);
-    //         $('#vmDetailsStatus').text(thisinstance.status);
-    //     } else {
-    //         return;
-    //     }
-    // });
+    
+}
 
+function openVmDetails(vmName) {
+    console.log("openVmDetails(" + vmName + ")");
     getVmStats(vmName);
 
 }
@@ -87,7 +85,7 @@ function getVmStats(vmName) {
     console.log("getting vm stats");
     url = "/vm/" + vmName + "/vmStats";
     $.get(url, function(res) {
-        console.log(res.data);
+        //console.log(res.data);
         if (!res.type) {
             alert(res.data);
             return;
@@ -105,51 +103,110 @@ function getVmStats(vmName) {
             $('#alarm-MemoryUtilizationStatus').prop("checked", res.data.alarmMemory.flag);
             $('#alarm-DiskUtilizationValue').val(res.data.alarmDisk.value);
             $('#alarm-DiskUtilizationStatus').prop("checked", res.data.alarmDisk.flag);
-            getGraphs(thisinstance.ipaddress);
+            //getGraphs(thisinstance.ipaddress);
+             $("#vmip").val(thisinstance.ipaddress);
+             openGraphwithmodal();
         }
     });
 }
 
-function getGraphs(ip) {
+function getGraphs() {
+    var ip =  $("#vmip").val();
+    var graphSize = $("#graphSize").val();
     console.log("Geeting graphs for vm: " + ip);
-    ip = "100.100.100.100"; //static ip need to remove
+    ip = "130.65.133.45"; //static ip need to remove
     console.log("getting vm graphs");
     url = "/vm";
-    $.post(url, {
-        ip: ip
-    }, function(res) {
-        if (!res.type) {
+
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: {
+            ip:  ip,
+            size: graphSize
+        },
+        crossDomain: true,
+        dataType: "json",
+        success: function(res) {
+           if (!res.type) {
             alert(res.data);
             return;
         } else {
             graphData = res.data;
-            generateCpuGraph(graphData.time, graphData.cpu);
-            generateMemoryGraph(graphData.time, graphData.mem);
-            generateNetworkGraph(graphData.time, graphData.net);
-            generateDiskGraph(graphData.time, graphData.disk);
+            console.log(graphData.logtime.length);
+            console.log(graphData.logtime);
+            generateCpuGraph(graphData.logtime, graphData.cpu);
+            generateMemoryGraph(graphData.logtime, graphData.memtotal, graphData.memused);
+            generateNetworkGraph(graphData.logtime, graphData.networkIn, graphData.networkOut);
+            generateDiskGraph(graphData.logtime, graphData.disktotal, graphData.diskused);
+            generateIOGraph(graphData.logtime, graphData.diskIORead, graphData.diskIOWrite);
+        }
+        setTimeout(function(){ 
+            if($("#ismodalopen").val()=="true")
+                getGraphs();
+        }, 5000);
+
+        },
+        error: function(request, status, err) {
+            if (status == "timeout") {
+                //gotoDir(pmcat_id, pcat_id);
+                console.log("Timeout");
+            }
         }
     });
+    
+}
 
-    $('#vmDetails').openModal();
+function openGraphwithmodal() {
+    $('#vmDetails').openModal({
+        dismissible: true, // Modal can be dismissed by clicking outside of the modal
+        opacity: .5, // Opacity of modal background
+        in_duration: 300, // Transition in duration
+        out_duration: 200, // Transition out duration
+        ready: function() {
+            //alert('Ready');
+            //console.log('Ready');
+            $("#ismodalopen").val("true");
+            getGraphs();
+        }, // Callback for Modal open
+        complete: function() {
+                //alert("Close");
+                //console.log('Close');
+                $("#ismodalopen").val("false");
+            } // Callback for Modal close
+    });
+}
+
+function closeVMDetailsModal(){
+    console.log("closing VM Details Modal");
+    $('#vmDetails').closeModal();
+    $("#ismodalopen").val("false"); 
+}
+
+
+function sleep(millis)
+ {
+  var date = new Date();
+  var curDate = null;
+  do { curDate = new Date(); }
+  while(curDate-date < millis);
 }
 
 
 function generateCpuGraph(time, cpu) {
-    console.log("cpu: " + cpu);
+    //console.log("cpu: " + cpu);
 
     $('#graph-cpu').highcharts({
         chart: {
             //height: 300,
-            zoomType: 'xy'
+            zoomType: 'xy',
+            borderWidth: 1
         },
 
         title: {
-            text: 'VM Stats'
-        },
-        subtitle: {
             text: 'CPU',
-            x: -20
         },
+        
         xAxis: {
             categories: time
         },
@@ -163,20 +220,18 @@ function generateCpuGraph(time, cpu) {
     });
 }
 
-function generateMemoryGraph(time, mem) {
-    console.log("mem: " + mem);
+function generateMemoryGraph(time, memTotal, memUsed) {
+    // console.log("memTotal: " + memTotal);
+    // console.log("memUsed: " + memUsed);
 
     $('#graph-memory').highcharts({
         chart: {
             //height: 300,
-            zoomType: 'xy'
+            zoomType: 'xy',
+            borderWidth: 1
         },
         title: {
-            text: 'VM Stats'
-        },
-        subtitle: {
-            text: 'Memory',
-            x: -20
+            text: 'Memory (MB)'
         },
         xAxis: {
             categories: time
@@ -185,26 +240,26 @@ function generateMemoryGraph(time, mem) {
 
         },
         series: [{
-            name: 'Memory(MB)',
-            data: mem
+            name: 'Memory Total(MB)',
+            data: memTotal
+        }, {
+            name: 'Memory Used(MB)',
+            data: memUsed
         }]
     });
 }
 
-function generateDiskGraph(time, disk) {
-    console.log("disk: " + disk);
-
+function generateDiskGraph(time, diskTotal, diskUsed) {
+    // console.log("diskTotal: " + diskTotal);
+    // console.log("diskUsed: " + diskUsed);
     $('#graph-disk').highcharts({
         chart: {
             //height: 300,
-            zoomType: 'xy'
+            zoomType: 'xy',
+            borderWidth: 1
         },
         title: {
-            text: 'VM Stats'
-        },
-        subtitle: {
-            text: 'CPU & Memory',
-            x: -20
+            text: 'Disk IO'
         },
         xAxis: {
             categories: time
@@ -213,26 +268,27 @@ function generateDiskGraph(time, disk) {
 
         },
         series: [{
-            name: 'CPU (MHz)',
-            data: disk
+            name: 'Disk Total',
+            data: diskTotal
+        },{
+            name: 'Disk Used',
+            data: diskUsed
         }]
     });
 }
 
-function generateNetworkGraph(time, net) {
-    console.log("net: " + net);
+function generateNetworkGraph(time, netIn, netOut) {
+    // console.log("netIn: " + netIn);
+    // console.log("netOut: " + netOut);
 
     $('#graph-network').highcharts({
         chart: {
             //height: 300,
-            zoomType: 'xy'
+            zoomType: 'xy',
+            borderWidth: 1
         },
         title: {
-            text: 'VM Stats'
-        },
-        subtitle: {
             text: 'Network',
-            x: -20
         },
         xAxis: {
             categories: time
@@ -241,26 +297,27 @@ function generateNetworkGraph(time, net) {
 
         },
         series: [{
-            name: 'Network',
-            data: net
+            name: 'Network In',
+            data: netIn
+        }, {
+            name: 'Network Out',
+            data: netOut
         }]
     });
 }
 
-function generateIOGraph(time, io) {
-    console.log("io: " + io);
+function generateIOGraph(time, ioRead, ioWrite) {
+    // console.log("ioRead: " + ioRead);
+    // console.log("ioWrite: " + ioWrite);
 
     $('#graph-io').highcharts({
         chart: {
             //height: 300,
-            zoomType: 'xy'
+            zoomType: 'xy',
+            borderWidth: 1
         },
         title: {
-            text: 'VM Stats'
-        },
-        subtitle: {
-            text: 'IO',
-            x: -20
+            text: 'IO'
         },
         xAxis: {
             categories: time
@@ -269,8 +326,11 @@ function generateIOGraph(time, io) {
 
         },
         series: [{
-            name: 'IO',
-            data: io
+            name: 'IO Read',
+            data: ioRead
+        }, {
+            name: 'IO Write',
+            data: ioWrite
         }]
     });
 }

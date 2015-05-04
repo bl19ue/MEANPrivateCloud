@@ -6,11 +6,13 @@ var rest = require('restler');
 var mongoose = require("mongoose");
 var jwt = require("jsonwebtoken");
 var q = require('q');
+//var ping = require ("net-ping");
 
 /*Get */
 var UserSchema = mongoose.model('User');
 var TemplateSchema = mongoose.model('Template');
 var InstanceSchema = mongoose.model('Instance');
+//var pingsession = ping.createSession ();
 
 /* GET home page. */
 router.get('/', function(req, res) {
@@ -69,7 +71,7 @@ var reqElasticSearch = {
                 deferred.resolve(data);
             });
         } else {
-            console.log('Post request to elastic search with path=' + path + "and d = " + d);
+            console.log('Post request to elastic search with path=' + path + " and d = " + d);
             rest.postJson(path, d, {
                 timeout: 5000
             }).on('complete', function(data) {
@@ -254,7 +256,7 @@ router.post('/vm/:vmname/create', function(req, res, next) {
                 data: "Instance name conflict"
             });
         } else {
-            //if Instance not found	
+            //if Instance not found 
             var vmObject = {
                 'vmName': req.body.vmName
             };
@@ -440,7 +442,7 @@ router.get('/vm/:vmname/stop', function(req, res) {
 //This api gives stats of vm with vmId - id of user- 'username'
 router.get('/vm/:id/stats', ensureAuthorized, function(req, res) {
 
-    //	authenticateToken(req,res);
+    //  authenticateToken(req,res);
 
     UserSchema.findOne({
         token: req.token
@@ -619,8 +621,9 @@ router.post("/vm/:vmname/alarm/update", function(req, res) {
 router.post('/vm', function(req, res) {
     console.log('/vm');
     var ip = req.body.ip;
+    var size = req.body.size;
     console.log(req.body);
-    generateStats(ip).then(function(stats) {
+    generateStats(ip, size).then(function(stats) {
         console.log("statsss=" + stats);
         res.json({
             type: true,
@@ -634,53 +637,134 @@ router.post('/vm', function(req, res) {
     });
 
 });
+var request = require("request");
+var generateStats = function(ip, size) {
+    var masterIP = "130.65.133.333";
+    var slave1IP = "130.65.133.44";
+    var slave2IP = "130.65.133.169";
+    var esIP = [masterIP, slave1IP, slave2IP];
+    var deferred = q.defer();
+    request({
+        uri: "http://" + masterIP + ":9200/",
+        method: "GET",
+    }, function(error, response, body) {
 
-var generateStats = function(ip) {
-    //TODO get details of the VM
+        if (error) {
+            console.log("Master Failure");
 
-    var url = 'http://10.189.175.23:9200//project2/vm/_search';
+            request({
+                uri: "http://" + slave1IP + ":9200/",
+                method: "GET",
+            }, function(error, response, body) {
 
-    var data = {
-        "query": {
-            "filtered": {
-                "query": {
-                    "query_string": {
-                        "query": ip
+                if (error) {
+                    console.log("Slave 1 Failure");
+
+                    request({
+                        uri: "http://" + slave2IP + ":9200/",
+                        method: "GET",
+                    }, function(error, response, body) {
+
+                        if (error) {
+                            console.log("Congratulation you just fall in 1/27 probability")
+                        }
+                        else
+                        {
+                            console.log("Slave 2 Success");
+                            esIP = slave2IP;
+                            calldata(esIP,ip, size).then(function(stats){
+                                deferred.resolve(stats);
+                            }).fail(function(err) {
+                                deferred.reject(err);
+                            });
+                        }
+                    });
+                }
+                else
+                {
+                    console.log("Slave 1 Success");
+                    esIP = slave1IP;
+                    calldata(esIP,ip, size).then(function(stats){
+                        deferred.resolve(stats);
+                    }).fail(function(err) {
+                        deferred.reject(err);
+                    });
+                }
+            });
+
+        }
+        else
+        {
+            console.log("Master Success");
+            esIP = masterIP;
+            calldata(esIP,ip, size).then(function(stats){
+                deferred.resolve(stats);
+            }).fail(function(err) {
+                deferred.reject(err);
+            });
+        }
+    }); 
+    return deferred.promise;
+}
+
+function calldata(esIP,ip,size)
+{
+    if (esIP != "") {
+        var url = 'http://' + esIP + ':9200/_search?size=' + size;
+        console.log(url);
+        var data = {
+            "query": {
+                "filtered": {
+                    "query": {
+                        "query_string": {
+                            "query": ip
+                        }
                     }
                 }
             }
         }
-    }
-    console.log("ip=" + ip);
+        console.log("ip=" + ip);
 
-    var stats = {
-        time: [],
-        mem: [],
-        cpu: [],
-        net: [],
-        disk: []
-    };
+        var stats = {
+            logtime: [],
+            cpu: [],
+            diskIOWrite: [],
+            diskIORead: [],
+            networkIn: [],
+            networkOut: [],
+            memused: [],
+            memtotal: [],
+            disktotal: [],
+            diskused: []
+        };
 
-    var deferred = q.defer();
+        var deferred = q.defer();
 
-    reqElasticSearch.performReq(url, 'post', data).then(function(statsRow) {
+        reqElasticSearch.performReq(url, 'post', data).then(function(statsRow) {
+            console.log(statsRow.hits.total);
+            statsRow.hits.hits.forEach(function(row) {
+                //console.log(row._source.logtime);
+                stats.logtime.push(row._source.logtime);
+                stats.cpu.push(parseFloat(row._source.cpu));
+                stats.diskIOWrite.push(parseFloat(row._source.diskIOWrite));
+                stats.diskIORead.push(parseFloat(row._source.diskIORead));
+                stats.networkIn.push(parseFloat(row._source.networkIn));
+                stats.networkOut.push(parseFloat(row._source.networkOut));
+                stats.memused.push(parseFloat(row._source.memused));
+                stats.memtotal.push(parseFloat(row._source.memtotal));
+                stats.disktotal.push(parseFloat(row._source.disktotal));
+                stats.diskused.push(parseFloat(row._source.diskused));
+            });
 
-        statsRow.hits.hits.forEach(function(row) {
-            console.log(row._source.date);
-            stats.time.push(row._source.date);
-            stats.mem.push(row._source.mem);
-            stats.cpu.push(row._source.cpu);
-            stats.net.push(row._source.net);
-            stats.disk.push(row._source.disk);
-            console.log("sd" + stats.time);
+            deferred.resolve(stats);
+
         });
 
-        deferred.resolve(stats);
-
-    });
-
-    return deferred.promise;
+        return deferred.promise;
+    }
 }
+
+
 
 /*********************************************ALARM END******************************************/
 module.exports = router;

@@ -129,6 +129,7 @@
                                                 <div class="input-field col s12">
                                                     <span class="col s4">Memory</span><span id="templateMemory2" class="col s8">4096 MB</span>
                                                 </div>
+
                                                 <div class="input-field col s12">
                                                     <span class="col s4">Storage Capacity</span><span id="templateCapacity2" class="col s8">20 GB</span>
                                                 </div>
@@ -174,7 +175,7 @@
                     <div id="dashboard" class="col s12">
                         <div class="col s12">
                             <!-- Modal Structure -->
-                            <div id="vmDetails" class="modal " style="width:80%; height:100%">
+                            <div id="vmDetails" class="modal" style="width:80%; height:100%">
                                 <div class="modal-content">
                                     <div class="row">
                                         <div class="col s12">
@@ -185,8 +186,6 @@
                                                 <li class="tab col s4"><a href="#graph">Cloud Watch</a></li>
                                             </ul>
                                         </div>
-
-                                    
                                         <div id="details" class="col s12">
                                             <div class="input-field col s12 center">
                                                 <h3 class="card-title" id="vmDetailsHeading"></h3>
@@ -219,6 +218,19 @@
                                         </div>
                                     
                                         <div id="graph" class="col s12">
+                                            <div class="row center-align">
+                                            <div class="col s12 l6 m6">
+                                                <h3>Interval</h3>
+                                            </div>    
+                                            <div class="col s12 l6 m6">
+                                                <select id="graphSize" class="browser-default">
+                                                    <option value="60" selected>5 mins</option>
+                                                    <option value="720" >1 Hour</option>
+                                                    <option value="17280">1 Day</option>
+                                                    <option value="120960">1 Week</option>
+                                                  </select>
+                                              </div>
+                                            </div>
                                             <div class="col s12 l4 m6">
                                                 <div id="graph-cpu" style="margin: 0 auto"></div>
                                             </div>
@@ -309,7 +321,7 @@
                                      </div>
                                 </div>
                                 <div class="modal-footer center">
-                                    <a href="#" class="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+                                    <a id="closeVMDetailsModal" class="modal-action modal-close waves-effect waves-green btn-flat" onclick="closeVMDetailsModal()">Close</a>
                                 </div>
                             </div>
                         </div>
@@ -339,6 +351,8 @@
         </div>
     </div>
     </div>
+    <input type="hidden" id="ismodalopen" value="false"/>
+    <input type="hidden" id="vmip" value="false"/>
 
     <footer class="page-footer grey darken-3">
 
